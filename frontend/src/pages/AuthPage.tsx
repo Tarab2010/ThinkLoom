@@ -1,16 +1,17 @@
 import { useState, type ComponentProps } from 'react';
-import { Navigate, Link, useNavigate } from "react-router-dom";
+import { Navigate, Link, useNavigate,useLocation } from "react-router-dom";
 import { useAuthStore } from '../store/authstore';
 type FormSubmitEvent=Parameters<NonNullable<ComponentProps<'form'>['onSubmit']>>[0];
 export default function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
     const issignup = mode === 'signup';
     const { user, login, signup } = useAuthStore();
     const navigate = useNavigate();
+    const from=(useLocation().state as{from?:string}|null)?.from ??'/';
     const [form, setForm] = useState({ name: '', email: '', password: '' });
     const [error, setError] = useState('');
     const [submitting, setSubmitting] = useState(false);
     if (user) {
-        return <Navigate to='/' replace />
+        return <Navigate to={from} replace />
     }
     async function OnSubmit(e:FormSubmitEvent){
         e.preventDefault();
