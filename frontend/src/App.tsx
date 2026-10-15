@@ -5,6 +5,8 @@ import { useAuthStore } from './store/authstore'
 import AuthPage from './pages/AuthPage'
 import Dashboard from './pages/Dashboard'
 import ProtectedRoute from './Components/ProctectedRoute'
+import ProjectPage from './pages/ProjectPage'
+import JoinPage from './pages/JoinPage'
 
 function App() {
   
@@ -20,6 +22,8 @@ function App() {
         <Route path='/signup' element={<AuthPage mode="signup" />} />
         <Route element={<ProtectedRoute/>} >
           <Route path='/' element={<Dashboard/>} />
+          <Route path='/projects/:projectId' element={<ProjectPage/>} />
+          <Route path='/join/:code' element={<JoinPage/>} />
         </Route>
       </Routes>
     </BrowserRouter>
