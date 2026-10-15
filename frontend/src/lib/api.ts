@@ -8,9 +8,9 @@ export async function api<T>(path: string , options:RequestInit={}):Promise<T>{
         headers:{'Content-Type':'application/json'},
         ...options
     })
-    const data= await res.json().catch(()=>{});
+    const data= await res.json().catch(()=>({}));
     if(!res.ok){
-        throw new Error(data.error??`Request failed${res.status}`);
+        throw new Error(data?.error??`Request failed${res.status}`);
     }
     return data as T;
 }
