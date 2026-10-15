@@ -6,10 +6,11 @@ export default function requireauth(req,res,next){
         return res.status(401).json({error:'Not Authenticated'});
     }
     try{
-        req.userId=jwt.verify(token,process.env.JWT_SECRET_KEY).id;
+        req.userId=jwt.verify(token,process.env.JWT_SECRET).id;
         next();
     }
-    catch{
+    catch(err){
+        console.log(err.message)
         res.status(401).json({error:'Invalid or expired session'});
     }
 }

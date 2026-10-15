@@ -16,22 +16,6 @@ function SetSession(res,userId){
     res.cookie('token',token,cookieOptions);
 }
 const publicuser=(u)=>({id:u._id, name:u.name, email:u.email});
-6:44:39 PM [vite] http proxy error: /api/auth/me
-Error: connect ECONNREFUSED ::1:5000
-    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1615:16)
-6:45:09 PM [vite] http proxy error: /apiauth/signup
-Error: connect ECONNREFUSED ::1:5000
-    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1615:16)
-6:45:11 PM [vite] http proxy error: /apiauth/signup
-Error: connect ECONNREFUSED ::1:5000
-    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1615:16) (x2)
-
-
-
-
-
-
-
 router.post('/login', async(req,res)=>{
     const {email,password}=req.body;
     const user=await User.findOne({email: (email||'').toLowerCase()});
@@ -49,7 +33,7 @@ router.post('/logout',async(req,res)=>{
     res.json({ok:true});
 });
 router.get('/me',requireauth,async (req,res)=>{
-    const user=await User.findbyId(req.userId);
+    const user=await User.findById(req.userId);
     if(!user){
         return res.status(401).json({error:'user not found'});
     }

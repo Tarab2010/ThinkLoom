@@ -15,7 +15,7 @@ app.get('/api/health',(req,res)=>{
 app.use('/api/auth', authRoutes);
 app.use('/api/projects',projectRoutes)
 app.use((err,_req,res,_next)=>{
-    if(err.name==='ValidationError' || err.name==='CasteError'){
+    if(err.name==='ValidationError' || err.name==='CastError'){
         return res.status(400).json({error:err.message})
     }
     console.log(err);
