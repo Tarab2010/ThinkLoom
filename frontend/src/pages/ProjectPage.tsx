@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import {Link,useParams} from 'react-router-dom';
 import type { Role } from "../store/projectstore";
+import MeetingsSection from "../Components/MeetingsSection";
 import {api} from '../lib/api';
 
 interface ProjectDetail{
@@ -116,6 +117,7 @@ export default function ProjectPage(){
                     </li>
                 ))}
             </ul>
+            <MeetingsSection projectId={project.id} isLeader={isleader}/>
             <p className="mt-8 text-sm text-gray-500">Meetings and canvas will appear here next</p>
         </div>
     )

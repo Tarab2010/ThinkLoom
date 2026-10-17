@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard'
 import ProtectedRoute from './Components/ProctectedRoute'
 import ProjectPage from './pages/ProjectPage'
 import JoinPage from './pages/JoinPage'
+import MeetingPage from './pages/MeetingPage'
 
 function App() {
   
@@ -24,6 +25,7 @@ function App() {
           <Route path='/' element={<Dashboard/>} />
           <Route path='/projects/:projectId' element={<ProjectPage/>} />
           <Route path='/join/:code' element={<JoinPage/>} />
+          <Route path='/projects/:projectId/meetings/:meetingId' element={<MeetingPage/>}/>
         </Route>
       </Routes>
     </BrowserRouter>
