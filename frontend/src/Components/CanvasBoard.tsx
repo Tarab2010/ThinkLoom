@@ -1,0 +1,205 @@
+import { Excalidraw,CaptureUpdateAction,reconcileElements } from "@excalidraw/excalidraw";
+import '@excalidraw/excalidraw/index.css'
+import type { Collaborator,ExcalidrawImperativeAPI,SocketId } from "@excalidraw/excalidraw/types";
+import { useCallback,useEffect,useState, type ComponentProps,useRef } from "react";
+import type { Socket } from "socket.io-client";
+import { createSocket } from "../lib/socket";
+import type { Role } from "../store/projectstore";
+type SceneElement={id:string,version:number,versionNonce?:number};
+type InitialData=ComponentProps<typeof Excalidraw>['initialData'];
+type Person={sockedId:string,userId:string,name:string,role:Role};
+type JoinReply={ok:true,role:Role,elements:SceneElement[]} |{error:string};
+export default function CanvasBoard({projectId,meetingId,onRoleChange,}:{projectId:string;meetingId:string;onRoleChange?:(role:Role)=>void}){
+    const[initial,setInitial]=useState<InitialData |null>(null);
+    const [role,setRole]=useState<Role|null>(null);
+    const [online,setOnline]=useState<Person[]>([]);
+    const [status,setStatus]=useState<'connecting'|'live'|'offline'>('connecting');
+    const [error,setError]=useState('');
+    const socketRef=useRef<Socket|null>(null);
+    const roleRef=useRef<Role|null>(null);
+    const apiRef=useRef<ExcalidrawImperativeAPI|null>(null);
+    const joined=useRef(false);
+    const known=useRef(new Map<string,number>());
+    const pendingOut=useRef(new Map<string,SceneElement>());
+    const flushTimer=useRef<number|undefined>(undefined);
+    const early=useRef<SceneElement[]>([]);
+    const collaborators=useRef(new Map<SocketId,Collaborator>());
+    const lastPointer=useRef(0);
+    const onRoleRef=useRef(onRoleChange);
+    useEffect(()=>{
+        onRoleRef.current=onRoleChange;
+    })
+    const flush=useCallback(()=>{
+        flushTimer.current=undefined;
+        const socket=socketRef.current;
+        if(!socket || !joined.current || pendingOut.current.size===0){
+            return ;
+        }
+        const all=[...pendingOut.current.values()];
+        pendingOut.current.clear();
+        for(let i=0 ;i<all.length;i+=500){
+            socket.emit('scene:update',{elements:all.slice(i,i+500)});
+        }
+    },[]);
+    const queueChanges=useCallback((elements:readonly SceneElement[])=>{
+        for(const el of elements){
+            if(known.current.get(el.id)!==el.version){
+                pendingOut.current.set(el.id,el);
+                known.current.set(el.id,el.version);
+            }
+        }
+        if(pendingOut.current.size>0 && flushTimer.current===undefined){
+            flushTimer.current=window.setTimeout(flush,60);
+
+        }
+    },[flush]);
+    const applyRemote=useCallback((remote:SceneElement[])=>{
+        const api=apiRef.current;
+        if(!api){
+            early.current.push(...remote);
+            return;
+        }
+        for(const el of remote){
+            known.current.set(el.id,el.version);
+        }
+        const merged=reconcileElements(
+            api.getSceneElementsIncludingDeleted() as never,
+            remote as never,
+            api.getAppState() as never
+        );
+        api.updateScene({elements:merged,captureUpdate:CaptureUpdateAction.NEVER});
+    },[])
+    const handleApi=useCallback((api: ExcalidrawImperativeAPI|null)=>{
+        apiRef.current=api;
+        if(api && early.current.length>0){
+            const waiting=early.current;
+            early.current=[];
+            applyRemote(waiting);
+        }
+    },[applyRemote])
+    useEffect(()=>{
+        const socket=createSocket();
+        socketRef.current=socket;
+        let closed=false;
+        const join=()=>{
+            socket.emit('meeting:join',{projectId,meetingId},(res:JoinReply)=>{
+                if(closed){
+                    return;
+                }
+                if('error' in res){
+                    setError(res.error);
+                    setStatus('offline');
+                    return;
+                }
+                joined.current=true;
+                setError('');
+                setStatus('live');
+                setRole(res.role);
+                roleRef.current=res.role;
+                onRoleRef.current?.(res.role);
+                if(apiRef.current){
+                    applyRemote(res.elements);
+                    queueChanges(apiRef.current.getSceneElementsIncludingDeleted() as unknown as SceneElement[]);
+                    flush();
+                }
+                else{
+                    known.current=new Map(res.elements.map((el)=>[el.id,el.version]));
+                    setInitial({elements:res.elements,scrollToContent:true} as unknown as InitialData);
+
+                }
+            });
+        }
+        socket.on('connect',join);
+        socket.on('disconnet',()=>{
+            joined.current=false;
+            if(!closed){
+                setStatus('connecting');
+            }
+        });
+        socket.on('connect_error',(err)=>{
+            if(closed){
+                return;
+            }
+            setStatus('offline');
+            setError(err.message==='Not Authenticated'?'Please login again':'Could not reachh the live session');
+        });
+        socket.on('scene:update',({elements}:{elements:SceneElement[]})=>applyRemote(elements));
+        socket.on('pointer:update',(p:{socketId:string;userName:string;pointer:{x:number;y:number;tool:'pointer'|'laser'};button:'up'|'down'})=>{
+            const api=apiRef.current;
+            if(!api){
+                return;
+            }
+            const id=p.socketId as SocketId;
+            const next=new Map(collaborators.current);
+            next.set(id,{...next.get(id),pointer:p.pointer,button:p.button,username:p.userName} as Collaborator);
+            collaborators.current=next;
+            api.updateScene({collaborators:next});
+        });
+        socket.on('presence',(users:Person[])=>{
+            setOnline(users);
+            const ids=new Set(users.map((u)=>u.sockedId));
+            const next=new Map([...collaborators.current].filter(([id])=>ids.has(id)));
+            collaborators.current=next;
+            apiRef.current?.updateScene({collaborators:next});            
+        });
+        socket.on('meeting:role',({role:newRole}:{role:Role})=>{
+            setRole(newRole);
+            roleRef.current=newRole;
+            if(newRole==='viewer'){
+                pendingOut.current.clear();
+            }
+            onRoleRef.current?.(newRole);
+        });
+        socket.on('meeting:error',({message}:{message:string})=>setError(message));
+        socket.connect();
+        return()=>{
+            closed=true;
+            flush();
+            joined.current=false;
+            window.clearTimeout(flushTimer.current);
+            socket.disconnect();
+            socketRef.current=null;
+        }
+    },[projectId,meetingId,applyRemote,queueChanges,flush]);
+    function handleChange(elements:readonly SceneElement[]){
+        const r=roleRef.current;
+        if(r!=='leader' && r!=='editor'){
+            return;
+        }
+        queueChanges(elements);
+    }
+    function handlePointer(p:{pointer:{x:number;y:number;tool:'pointer'|'laser'};button:'down'|'up'}){
+        const now=Date.now();
+        if(now-lastPointer.current<50){
+            return;
+        }
+        lastPointer.current=now;
+        socketRef.current?.volatile.emit('ponter:update',{pointer:p.pointer,button:p.button});
+    }
+    const canEdit=role==='leader' || role==='editor';
+    return(
+        <div>
+            <div>
+                <span>
+                    {status==='live'?'● Live':status==='connecting'?'● Reconnecting...' : '● Offline'}
+                    <span>{canEdit?'you can editthis canvs':'View Only :You cannot edit this canva'}</span>
+                </span>
+                <span>
+                    Online now:{'-'}
+                    {online.length===0?'-':online.map((u)=>`${u.name}(${u.role})`).join(', ')}
+                </span>
+            </div>
+            {error && <p>{error}</p> }
+            <div className="h-[70vh] overflow-hidden rounded-xl border bg-white">
+                <Excalidraw
+                initialData={initial}
+                excalidrawAPI={handleApi}
+                viewModeEnabled={role==='viewer'}
+                isCollaborating
+                onChange={(elements)=>handleChange(elements)}
+                onPointerUpdate={handlePointer}
+                />
+            </div>
+        </div>
+    )
+}

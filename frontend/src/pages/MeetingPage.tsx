@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { formatduration,formatWhen,statusStyle, type meetingstatus } from "../lib/meetingTime";
 import type{ Role } from "../store/projectstore";
+import CanvasBoard from "../Components/CanvasBoard";
 
 interface MeetingDetail{
     id:string,
@@ -93,7 +94,17 @@ export default function MeetingPage(){
             <p>{formatWhen(meeting.startsAt,meeting.duration)}.{formatduration(meeting.duration)}</p>
             <p>{`Your role in this meeting: ${meeting.myRole}` }</p>
             {error && <p className=" mt-4 text-sm text-red-500">{error}</p> }
-            <h2>wocan do what in this meeting</h2>
+            <div className="mt-6">
+                {projectId && meetingId &&(
+                    <CanvasBoard
+                    key={meetingId}
+                    projectId={projectId}
+                    meetingId={meetingId}
+                    onRoleChange={(r)=>setMeeting((m)=>(m?{...m,myRole:r}:m))}
+                    />
+                )}
+            </div>
+            <h2>who can do what in this meeting</h2>
             <ul>
                 {members.map((m)=>(
                     <li key={m.userId}>

@@ -1,12 +1,16 @@
 import 'dotenv/config';
 import express from 'express';
+import http from 'http';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import authRoutes from './routes/auth.js';
 import projectRoutes from './routes/projects.js';
 import meetingRoutes from './routes/meetings.js';
 import { connectDB } from './config/db.js';
+import { initSockets } from './sockets/meetingSocket.js';
 const app=express();
+const server=http.createServer(app);
+app.set('io',initSockets(server));
 app.use(cors({origin:process.env.CLIENT_URL, credentials:true}));
 app.use(express.json());
 app.use(cookieParser());
@@ -25,4 +29,7 @@ app.use((err,_req,res,_next)=>{
 })
 
 const port=process.env.PORT ||5000;
-connectDB().then(()=>app.listen(port,()=>console.log(`Api running on ${port}`)))
+connectDB().then(()=>server.listen(port,()=>console.log(`Api running on ${port}`)))
+.catch((err)=>{console.error('Could not start:',err.message);
+    process.exit(1);
+})

@@ -6,7 +6,8 @@ import requireauth from '../middleware/auth.js';
 import Meetings from '../models/Meetings.js';
 import Membership from '../models/Membership.js';
 import Meetingrole from '../models/Meetingroles.js';
-
+import CanvasVersion from '../models/CanvasVersion.js';
+import { flushMeetingCanvas,refreshMeetingRoles } from '../sockets/meetingSocket.js';
 const router=Router({mergeParams:true});
 router.use(requireauth);
 
@@ -56,6 +57,19 @@ router.post('/',requireRole('leader'),async(req,res)=>{
     const meeting=await Meetings.create({
         ...fields,createdBy:req.userId,project:req.params.projectId,startedFrom
     });
+    let startingElements=[];
+    if(startedFrom){
+        await flushMeetingCanvas(startedFrom);
+        const prevCanvas=await CanvasVersion.findOne({meeting:startedFrom});
+        if(prevCanvas){
+            startingElements=prevCanvas.toObject().elements;
+        }
+    }
+    await CanvasVersion.create({
+        meeting:meeting._id,
+        elements:startingElements,
+        updatedBy:req.userId
+    })
     res.status(201).json(meetingjson(meeting,'leader'));
 })
 router.get('/',requireRole(),async(req,res)=>{
@@ -112,6 +126,7 @@ router.patch('/:meetingId/members/:userId',requiremeetingrole('leader'),async(re
         {role},
         {upsert:true}
     );
+    await refreshMeetingRoles(req.app.get('io'),String(req.meeting._id));
     res.json({userId:req.params.userId,role});
 })
 export default router;
