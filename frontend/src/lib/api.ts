@@ -14,3 +14,4 @@ export async function api<T>(path: string , options:RequestInit={}):Promise<T>{
     }
     return data as T;
 }
+export const apiUrl=(path:string)=>`${BASE}${path}`;

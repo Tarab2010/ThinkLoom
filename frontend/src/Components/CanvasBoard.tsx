@@ -1,13 +1,14 @@
 import { Excalidraw,CaptureUpdateAction,reconcileElements } from "@excalidraw/excalidraw";
 import '@excalidraw/excalidraw/index.css'
-import type { Collaborator,ExcalidrawImperativeAPI,SocketId } from "@excalidraw/excalidraw/types";
+import type { BinaryFiles, Collaborator,ExcalidrawImperativeAPI,SocketId } from "@excalidraw/excalidraw/types";
 import { useCallback,useEffect,useState, type ComponentProps,useRef } from "react";
 import type { Socket } from "socket.io-client";
 import { createSocket } from "../lib/socket";
 import type { Role } from "../store/projectstore";
-type SceneElement={id:string,version:number,versionNonce?:number};
+import { createImageSync,type imageLike,type ImageSync } from "../lib/canvasImages";
+type SceneElement={id:string,version:number,versionNonce?:number}&imageLike;
 type InitialData=ComponentProps<typeof Excalidraw>['initialData'];
-type Person={sockedId:string,userId:string,name:string,role:Role};
+type Person={socketId:string,userId:string,name:string,role:Role};
 type JoinReply={ok:true,role:Role,elements:SceneElement[]} |{error:string};
 export default function CanvasBoard({projectId,meetingId,onRoleChange,}:{projectId:string;meetingId:string;onRoleChange?:(role:Role)=>void}){
     const[initial,setInitial]=useState<InitialData |null>(null);
@@ -26,9 +27,31 @@ export default function CanvasBoard({projectId,meetingId,onRoleChange,}:{project
     const collaborators=useRef(new Map<SocketId,Collaborator>());
     const lastPointer=useRef(0);
     const onRoleRef=useRef(onRoleChange);
+    const imagesRef=useRef<ImageSync|null>(null);
     useEffect(()=>{
         onRoleRef.current=onRoleChange;
     })
+    useEffect(()=>{
+        const images=createImageSync(`/projects/${projectId}/meetings/${meetingId}/canvas-files`,setError);
+        imagesRef.current=images;
+        images.setApi(apiRef.current);
+        const onAddImage=(e:Event)=>{
+            const detail=(e as CustomEvent<{ blob: Blob; handled: boolean; done: (text: string) => void }>).detail;
+            const r=roleRef.current;
+            if(!apiRef.current || (r!='leader' && r!=='editor')){
+                return;
+            }
+            detail.handled=true;
+            imagesRef.current?.add(detail.blob).then(()=>detail.done('Add to the canvas')).catch((err)=>detail.done(err instanceof Error? err.message:'could not add the picture'))
+        }
+        window.addEventListener('thinkloom:add-image',onAddImage);
+        return ()=>{
+            window.removeEventListener('thinkloom:add-image',onAddImage);
+            images.dispose();
+            imagesRef.current=null;
+        }
+    },[projectId,meetingId])
+    
     const flush=useCallback(()=>{
         flushTimer.current=undefined;
         const socket=socketRef.current;
@@ -71,6 +94,7 @@ export default function CanvasBoard({projectId,meetingId,onRoleChange,}:{project
     },[])
     const handleApi=useCallback((api: ExcalidrawImperativeAPI|null)=>{
         apiRef.current=api;
+        imagesRef.current?.setApi(api)
         if(api && early.current.length>0){
             const waiting=early.current;
             early.current=[];
@@ -110,13 +134,14 @@ export default function CanvasBoard({projectId,meetingId,onRoleChange,}:{project
             });
         }
         socket.on('connect',join);
-        socket.on('disconnet',()=>{
+        socket.on('disconnect',()=>{
             joined.current=false;
             if(!closed){
                 setStatus('connecting');
             }
         });
         socket.on('connect_error',(err)=>{
+            console.log('socket error',err.message)
             if(closed){
                 return;
             }
@@ -137,7 +162,7 @@ export default function CanvasBoard({projectId,meetingId,onRoleChange,}:{project
         });
         socket.on('presence',(users:Person[])=>{
             setOnline(users);
-            const ids=new Set(users.map((u)=>u.sockedId));
+            const ids=new Set(users.map((u)=>u.socketId));
             const next=new Map([...collaborators.current].filter(([id])=>ids.has(id)));
             collaborators.current=next;
             apiRef.current?.updateScene({collaborators:next});            
@@ -161,9 +186,11 @@ export default function CanvasBoard({projectId,meetingId,onRoleChange,}:{project
             socketRef.current=null;
         }
     },[projectId,meetingId,applyRemote,queueChanges,flush]);
-    function handleChange(elements:readonly SceneElement[]){
+    function handleChange(elements:readonly SceneElement[],files:BinaryFiles){
         const r=roleRef.current;
-        if(r!=='leader' && r!=='editor'){
+        const canEditNow=r==='leader' || r==='editor';
+        imagesRef.current?.sync(elements,files,canEditNow)
+        if(!canEditNow){
             return;
         }
         queueChanges(elements);
@@ -174,29 +201,29 @@ export default function CanvasBoard({projectId,meetingId,onRoleChange,}:{project
             return;
         }
         lastPointer.current=now;
-        socketRef.current?.volatile.emit('ponter:update',{pointer:p.pointer,button:p.button});
+        socketRef.current?.volatile.emit('pointer:update',{pointer:p.pointer,button:p.button});
     }
     const canEdit=role==='leader' || role==='editor';
     return(
         <div>
-            <div>
-                <span>
+            <div className="mb-2 flex flexwrap items-center justify-between gap-2 text-sm">
+                <span className={status==='live'?'text-green-700':'text-amber-600'}>
                     {status==='live'?'● Live':status==='connecting'?'● Reconnecting...' : '● Offline'}
                     <span>{canEdit?'you can editthis canvs':'View Only :You cannot edit this canva'}</span>
                 </span>
-                <span>
+                <span className="ml-3 text-gray-500" >
                     Online now:{'-'}
                     {online.length===0?'-':online.map((u)=>`${u.name}(${u.role})`).join(', ')}
                 </span>
             </div>
-            {error && <p>{error}</p> }
+            {error && <p className="mb-2 text-sm text-red-600" >{error}</p> }
             <div className="h-[70vh] overflow-hidden rounded-xl border bg-white">
                 <Excalidraw
                 initialData={initial}
                 excalidrawAPI={handleApi}
                 viewModeEnabled={role==='viewer'}
                 isCollaborating
-                onChange={(elements)=>handleChange(elements)}
+                onChange={(elements,_appState,files)=>handleChange(elements,files)}
                 onPointerUpdate={handlePointer}
                 />
             </div>

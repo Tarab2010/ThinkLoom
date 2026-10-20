@@ -11,6 +11,7 @@ export default function Dashboard(){
     const [form,setForm]=useState({name:'',description:'',category:''});
     const [error,setError]=useState('');
     const [creating,setCreating]=useState(false);
+    
     useEffect(()=>{
         fetchProjects();
     },[fetchProjects])

@@ -8,14 +8,36 @@ import CanvasVersion from '../models/CanvasVersion.js';
 import { isNewer } from '../lib/mergeElements.js';
 import { effectiverole } from '../middleware/meetingrole.js';
 import {createRequire} from 'module';
-const {parse}=createRequire(import.meta.url)('cookie')
 import Meetings from '../models/Meetings.js';
 
+function readCookies(header =''){
+    const out={};
+    for(const part of header.split(';')){
+        const i=part.indexOf('=');
+        if(i<0){
+            continue;
+        }
+        const name=part.slice(0,i).trim();
+        if(!name){
+            continue;
+        }
+        let value=part.slice(i+1).trim();
+        if(value.startsWith('"') && value.endsWith('"')){
+            value=value.slice(1,-1);
+        }
+        try{
+            out[name]=decodeURIComponent(value);
+        }
+        catch{out[name]=value}
+    }
+    return out;
+}
 const MAX_ELEMENTS=5000;
 const MAX_PER_UPDATE=1000;
 const SAVE_EVERY_MS=2000;
-const COOKIE_NAMES=['thinkloontoken','token'];
+const COOKIE_NAMES=['token'];
 const roomName=(meetingId)=>`meeting:${meetingId}`;
+export const ideasRoom=(meetingId)=>`ideas:${meetingId}`;
 const rooms=new Map();
 async function loadroom(meetingId){
     const existing=rooms.get(meetingId);
@@ -144,26 +166,34 @@ export function initSockets(server){
         maxHttpBufferSize:2e6,
     })
     io.use(async (socket,next)=>{
+        console.log('socket auth: connection attempt')
         try{
-            const cookies=parse(socket.handshake.headers.cookie ||'');
+            const cookies=readCookies(socket.handshake.headers.cookie ||'');
+             console.log('socket auth: cookies seen:', Object.keys(cookies));
+              const probe = (COOKIE_NAMES.map((n) => cookies[n]).find(Boolean) || '');
+    console.log('socket auth: token starts with:', JSON.stringify(probe.slice(0, 14)), 'length:', probe.length);
             const token=COOKIE_NAMES.map((name)=>cookies[name]).find(Boolean);
             if(!token){
+                console.log('socket auth: no login cookie was sent ',Object.keys(cookies))
                 return next(new Error('Not Authenticated'));
             }
-            const {id}=jwt.verify(token,process.env.JWT_SECRET);
+            const payload=jwt.verify(token,process.env.JWT_SECRET)
+            const id=payload.id?? payload.userId ?? payload._id ??payload.sub
             const user=await User.findById(id).select('name');
             if(!user){
-                return next(new Error('Nor authenticated'));
+                console.log('socket auth:no user found in this token',payload)
+                return next(new Error('Not Authenticated'));
             }
             socket.data.user={id:String(user._id),name:user.name};
             next();
         }
-        catch{
-            next(new Error('not authenticated'));
+        catch(err){
+            console.log('socket auth: token problem',err.message)
+            next(new Error('Not Authenticated'));
         }
     })
     io.on('connection',(socket)=>{
-        socket.on('meeing:join',async(payload,ack)=>{
+        socket.on('meeting:join',async(payload,ack)=>{
             const reply=typeof ack==='function'?ack:()=>{};
             try{
                 const{projectId,meetingId}=payload||{};
@@ -212,7 +242,7 @@ export function initSockets(server){
                 if(!elements.every(validElement)){
                     return;
                 }
-                const room =loadroom(meetingId);
+                const room =await loadroom(meetingId);
                 const accepted=[];
                 for(const el of elements){
                     const existing=room.elements.get(el.id);
@@ -220,7 +250,7 @@ export function initSockets(server){
                         continue;
                     }
                     if(isNewer(el,existing)){
-                        room.elemnts.set(el.id,el);
+                        room.elements.set(el.id,el);
                         accepted.push(el);
                     }
                 }
@@ -228,7 +258,7 @@ export function initSockets(server){
                     return;
                 }
                 room.lastEditor=user.id;
-                socket.to(roomName(meetingId).emit('scene:update',{elements:accepted}));
+                socket.to(roomName(meetingId)).emit('scene:update',{elements:accepted});
                 scheduleSave(meetingId,room);
             }
             catch(err){
@@ -241,13 +271,31 @@ export function initSockets(server){
             if(!meetingId || !pointer || !Number.isFinite(pointer.x) || !Number.isFinite(pointer.y)){
                 return;
             }
-            socket.to(roomName(meetingId).volatile.emit('pointer:update',{
+            socket.to(roomName(meetingId)).volatile.emit('pointer:update',{
                 socketId:socket.id,
                 userName:user.name,
                 pointer:{x:pointer.x, y:pointer.y,tool:pointer.tool==='laser'?'laser':'pointer'},
                 button:payload.button==='down'?'down':'up'
-            }))
+            })
         });
+        socket.on('ideas:subscribe',async(payload,ack)=>{
+            const reply=typeof ack==='function'?ack:()=>{};
+            try{
+                const {projectId,meetingId}=payload || {};
+                if(!mongoose.isValidObjectId(projectId) || !mongoose.isValidObjectId(meetingId)){
+                    return reply();
+                }
+                const membership=await Membership.findOne({project:projectId,user:socket.data.user.id});
+                const meeting=membership?await Meeting.findOne({_id:meetingId,project:projectId}):null;
+                if(meeting){
+                    socket.join(ideasRoom(meetingId));
+                }
+            }
+            catch(err){
+                console.error('ideasLsubscribe failed',err.message);
+            }
+            reply();
+        })
         socket.on('disconnect',()=>{
             const {meetingId}=socket.data;
             if(meetingId){

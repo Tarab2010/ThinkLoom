@@ -4,7 +4,7 @@ import { api } from "../lib/api";
 import { formatduration,formatWhen,statusStyle, type meetingstatus } from "../lib/meetingTime";
 import type{ Role } from "../store/projectstore";
 import CanvasBoard from "../Components/CanvasBoard";
-
+import IdeasPanel from "../Components/IdeasPanel";
 interface MeetingDetail{
     id:string,
     title:string,
@@ -104,6 +104,9 @@ export default function MeetingPage(){
                     />
                 )}
             </div>
+            {projectId && meetingId &&(
+                <IdeasPanel key={meetingId} projectId={projectId} meetingId={meetingId} isLeader={isLeader} />
+            )}
             <h2>who can do what in this meeting</h2>
             <ul>
                 {members.map((m)=>(
@@ -122,7 +125,8 @@ export default function MeetingPage(){
                     </li>
                 ))}
             </ul>
-            <div>The canva will appear here next</div>
+
+            <div></div>
         </div>
     )
 }

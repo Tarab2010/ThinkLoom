@@ -3,11 +3,13 @@ import express from 'express';
 import http from 'http';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import ideaRoutes from './routes/ideas.js'
 import authRoutes from './routes/auth.js';
 import projectRoutes from './routes/projects.js';
 import meetingRoutes from './routes/meetings.js';
 import { connectDB } from './config/db.js';
 import { initSockets } from './sockets/meetingSocket.js';
+import canvasFileRoutes from './routes/canvasFiles.js';
 const app=express();
 const server=http.createServer(app);
 app.set('io',initSockets(server));
@@ -18,8 +20,10 @@ app.get('/api/health',(req,res)=>{
     res.json({ok:true});
 })
 app.use('/api/auth', authRoutes);
-app.use('/api/projects',projectRoutes)
-app.use('/api/projects/:projectId/meetings',meetingRoutes)
+app.use('/api/projects',projectRoutes);
+app.use('/api/projects/:projectId/meetings/:meetingId/ideas',ideaRoutes);
+app.use('/api/projects/:projectId/meetings/:meetingId/canvas-files',canvasFileRoutes);
+app.use('/api/projects/:projectId/meetings',meetingRoutes);
 app.use((err,_req,res,_next)=>{
     if(err.name==='ValidationError' || err.name==='CastError'){
         return res.status(400).json({error:err.message})
