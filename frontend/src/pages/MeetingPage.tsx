@@ -5,6 +5,7 @@ import { formatduration,formatWhen,statusStyle, type meetingstatus } from "../li
 import type{ Role } from "../store/projectstore";
 import CanvasBoard from "../Components/CanvasBoard";
 import IdeasPanel from "../Components/IdeasPanel";
+import ArchivedCanvas from "../Components/ArchivedCanvas";
 interface MeetingDetail{
     id:string,
     title:string,
@@ -119,6 +120,11 @@ export default function MeetingPage(){
             {error && <p className=" mt-4 text-sm text-red-500">{error}</p> }
             <div className="mt-6">
                 {projectId && meetingId &&(
+                    meeting.status==='ended'  ?
+                <ArchivedCanvas
+                key={meetingId}
+                projectId={projectId}
+                meetingId={meetingId}/>:
                     <CanvasBoard
                     key={meetingId}
                     projectId={projectId}
@@ -127,9 +133,10 @@ export default function MeetingPage(){
                     />
                 )}
             </div>
-            {projectId && meetingId &&(
+            {projectId && meetingId && (meeting.status==='live'?
                 <IdeasPanel key={meetingId} projectId={projectId} meetingId={meetingId} isLeader={isLeader} />
-            )}
+            :'')}
+            
             <h2>who can do what in this meeting</h2>
             <ul>
                 {members.map((m)=>(

@@ -132,6 +132,11 @@ router.post('/:meetingId/end',requiremeetingrole('leader'),async(req,res)=>{
 
     res.json({ok:true});
 })
+router.get(`/:meetingId/canvas`,requiremeetingrole(),async(req,res)=>{
+    await flushMeetingCanvas(req.meeting._id);
+    const cv=await CanvasVersion.findOne({meeting:req.meeting._id});
+    res.json({elements:cv?cv.toObject().elements:[]});
+})
 router.patch('/:meetingId/members/:userId',requiremeetingrole('leader'),async(req,res)=>{
     const {role}=req.body;
     if(!['editor','viewer'].includes(role)){
