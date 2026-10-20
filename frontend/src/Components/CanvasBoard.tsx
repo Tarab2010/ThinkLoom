@@ -8,15 +8,17 @@ import type { Role } from "../store/projectstore";
 import { createImageSync,type imageLike,type ImageSync } from "../lib/canvasImages";
 type SceneElement={id:string,version:number,versionNonce?:number}&imageLike;
 type InitialData=ComponentProps<typeof Excalidraw>['initialData'];
+
 type Person={socketId:string,userId:string,name:string,role:Role};
-type JoinReply={ok:true,role:Role,elements:SceneElement[]} |{error:string};
+type JoinReply={ok:true,role:Role,elements:SceneElement[]}|{waiting:true} |{error:string};
 export default function CanvasBoard({projectId,meetingId,onRoleChange,}:{projectId:string;meetingId:string;onRoleChange?:(role:Role)=>void}){
     const[initial,setInitial]=useState<InitialData |null>(null);
     const [role,setRole]=useState<Role|null>(null);
     const [online,setOnline]=useState<Person[]>([]);
-    const [status,setStatus]=useState<'connecting'|'live'|'offline'>('connecting');
+    const [status,setStatus]=useState<'connecting'|'waiting'|'live'|'offline'>('connecting');
     const [error,setError]=useState('');
     const socketRef=useRef<Socket|null>(null);
+    const [lobby,setLobby]=useState<{userId:string,name:string}[]>([]);
     const roleRef=useRef<Role|null>(null);
     const apiRef=useRef<ExcalidrawImperativeAPI|null>(null);
     const joined=useRef(false);
@@ -110,6 +112,10 @@ export default function CanvasBoard({projectId,meetingId,onRoleChange,}:{project
                 if(closed){
                     return;
                 }
+                if('waiting' in res){
+                    setStatus('waiting');
+                    return;
+                }
                 if('error' in res){
                     setError(res.error);
                     setStatus('offline');
@@ -160,6 +166,7 @@ export default function CanvasBoard({projectId,meetingId,onRoleChange,}:{project
             collaborators.current=next;
             api.updateScene({collaborators:next});
         });
+
         socket.on('presence',(users:Person[])=>{
             setOnline(users);
             const ids=new Set(users.map((u)=>u.socketId));
@@ -175,7 +182,19 @@ export default function CanvasBoard({projectId,meetingId,onRoleChange,}:{project
             }
             onRoleRef.current?.(newRole);
         });
+        socket.on('meeting:admitted',join);
+        socket.on('meeting:denied',()=>{
+            setStatus('offline');
+            setError('Leader has not allowed you to enter')
+        });
+        socket.on('meeting:kicked',()=>{
+            joined.current=false;
+            setStatus('offline');
+            setError('leader kicked you out of the meeting');
+        });
+        socket.on('lobby:update',setLobby);
         socket.on('meeting:error',({message}:{message:string})=>setError(message));
+        socket.onAny((event, ...args) => console.log('SOCKET EVENT', event, args));
         socket.connect();
         return()=>{
             closed=true;
@@ -203,6 +222,24 @@ export default function CanvasBoard({projectId,meetingId,onRoleChange,}:{project
         lastPointer.current=now;
         socketRef.current?.volatile.emit('pointer:update',{pointer:p.pointer,button:p.button});
     }
+    const kick=(userId:string,name:string)=>{
+        if(!window.confirm(`Remove ${name} from this meeting ?`)){
+            return;
+        }
+        socketRef.current?.emit('meeting:kick',{userId},(res:{ok?:true, error?:string})=>{
+            if(res?.error){
+                setError(res.error);
+            }
+        })
+    }
+
+    const decide=(userId:string, allow:boolean)=>
+        socketRef.current?.emit('lobby:decide',{userId,allow},(res:{ok?:true, error?:string})=>{
+            console.log('lobby:decide reply',res);
+            if(res?.error){
+                setError(res.error);
+            }
+        })
     const canEdit=role==='leader' || role==='editor';
     return(
         <div>
@@ -211,10 +248,33 @@ export default function CanvasBoard({projectId,meetingId,onRoleChange,}:{project
                     {status==='live'?'● Live':status==='connecting'?'● Reconnecting...' : '● Offline'}
                     <span>{canEdit?'you can editthis canvs':'View Only :You cannot edit this canva'}</span>
                 </span>
-                <span className="ml-3 text-gray-500" >
-                    Online now:{'-'}
-                    {online.length===0?'-':online.map((u)=>`${u.name}(${u.role})`).join(', ')}
-                </span>
+                {role === 'leader' && lobby.length > 0 && (
+  <div className="mb-2 rounded-lg border p-2 text-sm">
+    <p className="font-medium">Waiting to join</p>
+    {lobby.map((u) => (
+      <div key={u.userId} className="mt-1 flex items-center gap-2">
+        <span>{u.name}</span>
+        <button onClick={()=>decide(u.userId,true)}className="bg-indigo-100 hover:underline" >Admit</button>
+        <button onClick={()=>decide(u.userId,false)}>Deny</button>
+      </div>
+    ))}
+  </div>
+)}
+                <div className="ml-3 text-gray-500">
+  Online now:
+  {online.length === 0 ? ' -' : online.map((u) => (
+    <span key={u.socketId} className="ml-2">
+      {u.name} ({u.role})
+      {role === 'leader' && u.role !== 'leader' && (
+        <button
+          className="ml-1 text-red-600 hover:underline"
+          onClick={() => kick(u.userId, u.name)}>
+          Kick
+        </button>
+      )}
+    </span>
+  ))}
+</div>
             </div>
             {error && <p className="mb-2 text-sm text-red-600" >{error}</p> }
             <div className="h-[70vh] overflow-hidden rounded-xl border bg-white">

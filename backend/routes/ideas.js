@@ -8,6 +8,7 @@ import requireauth from '../middleware/auth.js';
 import {requiremeetingrole} from '../middleware/meetingrole.js';
 import { detectType,ALLOWED_TEXT } from '../lib/fileTypes.js';
 import { saveFile,pathFor,removeFile } from '../lib/storage.js';
+import { meetingStatus } from '../lib/meetingStatus.js';
 const router=Router({mergeParams:true});
 router.use(requireauth);
 const member=requiremeetingrole();
@@ -69,6 +70,9 @@ router.get('/',member,async(req,res)=>{
     res.json(idea.map((i)=>ideaJson(i,totals.get(String(i._id))??0,mineSet.has(String(i._id)))))
 });
 router.post('/',member, acceptUpload,async(req,res)=>{
+    if(meetingStatus(req.meeting)!=='live'){
+        return res.status(403).json({error:'meeting is not live'});
+    }
     let title=String(req.body.title||'').trim();
     const description=String(req.body.description||'').trim();
     if(!req.file){
@@ -134,6 +138,9 @@ router.get('/:ideaId/file',member,async(req,res)=>{
     )
 })
 router.put('/:ideaId/vote',member,async(req,res)=>{
+    if(meetingStatus(req.meeting)!=='live'){
+        return res.status(403).json({error:'meeting is not live'});
+    }
     const idea=await findIdea(req);
     if(!idea){
         return res.status(404).json({error:'idea not found'});
@@ -151,6 +158,9 @@ router.put('/:ideaId/vote',member,async(req,res)=>{
     res.json({votes,myVote:true});
 });
 router.delete('/:ideaId/vote',member,async(req,res)=>{
+    if(meetingStatus(req.meeting)!=='live'){
+        return res.status(403).json({error:'meeting is not live'});
+    }
     const idea=await findIdea(req);
     if(!idea){
         return res.status(404).json({error:'idea not found'});

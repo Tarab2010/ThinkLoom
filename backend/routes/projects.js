@@ -62,7 +62,7 @@ router.get('/:projectId',requireRole(),async(req,res)=>{
 router.get('/:projectId/members',requireRole(), async(req,res)=>{
     const isLeader=req.membership.role==='leader';
     const list=await Membership.find({project:req.params.projectId}).populate('user','name email').sort({createdAt:1});
-    res.json(list.filter((m)=>m.user).map((m)=>({userId:m.user._id,name:m.name,role:m.role,...(isLeader && {email:m.user.email}),})))
+    res.json(list.filter((m)=>m.user).map((m)=>({userId:m.user._id,name:m.user.name,role:m.role,...(isLeader && {email:m.user.email}),})))
 })
 
 router.patch('/:projectId/members/:userId', requireRole('leader'), async(req,res)=>{
@@ -70,7 +70,7 @@ router.patch('/:projectId/members/:userId', requireRole('leader'), async(req,res
     if(!['editor','viewer'].includes(role)){
         return res.status(400).json({error:'role must be editor or viewer'});
     }
-    if(!mongoose.ValidateObjectId(req.params.userId)){
+    if(!mongoose.isValidObjectId(req.params.userId)){
         return res.status(404).json({error:'Member Not Found'});
     }
     const member=await Membership.findOneAndUpdate(
@@ -81,5 +81,6 @@ router.patch('/:projectId/members/:userId', requireRole('leader'), async(req,res
     if(!member){
         return res.status(404).json({error:'Member not found'})
     }
+    res.json({userId:req.params.userId,role});
 });
 export default router;

@@ -26,6 +26,7 @@ interface Member{
 export default function MeetingPage(){
     const {projectId,meetingId}=useParams();
     const [meeting,setMeeting]=useState<MeetingDetail | null>(null);
+    const [ending,setEnding]=useState(false);
     const[members,setMembers]=useState<Member[]>([]);
     const [error,setError]=useState('');
     const base=`/projects/${projectId}/meetings/${meetingId}`;
@@ -52,6 +53,23 @@ export default function MeetingPage(){
             cancelled=true;
         }
     },[base]);
+    async function endMeeting(){
+        if(!window.confirm('End this meeting for everyone')){
+            return;
+        }
+        setEnding(true);
+        setError('');
+        try{
+            await api(`${base}/end`,{method:'POST'});
+            setMeeting(await api<MeetingDetail>(base));
+        }
+        catch(err){
+            setError(err instanceof Error ? err.message:'Could not end this meeting')
+        }
+        finally{
+            setEnding(false);
+        }
+    }
     async function changeRole(userId:string, role:Role){
         setError('');
         try{
@@ -89,6 +107,11 @@ export default function MeetingPage(){
                     <span>
                         {meeting.status}
                     </span>
+                    {isLeader && meeting.status==='live' && (
+                        <button onClick={()=>endMeeting()} disabled={ending} className="mt-2 rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-60">
+                            {ending ?'Ending...':'End Meeting'}
+                        </button>
+                    )}
                 </div>
             </div>
             <p>{formatWhen(meeting.startsAt,meeting.duration)}.{formatduration(meeting.duration)}</p>
@@ -125,8 +148,6 @@ export default function MeetingPage(){
                     </li>
                 ))}
             </ul>
-
-            <div></div>
         </div>
     )
 }

@@ -12,7 +12,7 @@ interface MeetingSummary{
     startsAt:string;
     duration:number;
     status:meetingstatus;
-    staredFrom:string|null;
+    startedFrom:string|null;
     myRole:Role;
 }
 const duration=[15,30,45,60,90,120,180];
@@ -88,10 +88,10 @@ export default function MeetingsSection({projectId,isLeader,}:{projectId:string;
         <section className="mt-10">
             <h2 className="font-medium">Meetings</h2>
             {isLeader && (
-                <form onSubmit={onCreate} method="post">
+                <form onSubmit={onCreate} className="mt-3 space-y-3">
                     <input type="text" className={input} value={form.title} placeholder="Meeting title" onChange={(e)=>setForm({...form, title:e.target.value})} />
                     <input type="text" className={input} value={form.topic} placeholder="Meeting's topic" onChange={(e)=>setForm({...form, topic:e.target.value})} />
-                    <div className="grid-gap-3 sm:grid-cols-2">
+                    <div className="grid gap-3 sm:grid-cols-2">
                         <label htmlFor="" className="text-sm text-gray-600">
                             Starts At
                             <input type="datetime-local" className={`${input} mt-1`} value={form.startsAt} placeholder="Meeting's topic" onChange={(e)=>setForm({...form, startsAt:e.target.value})} />
@@ -101,20 +101,24 @@ export default function MeetingsSection({projectId,isLeader,}:{projectId:string;
                             <select name="" id="" className={`${input} mt-1`} value={form.duration} onChange={(e)=>setForm({...form, duration:e.target.value})} >
                                 {duration.map((d)=>(
                                     <option value={d} key={d}>
-                                        {d>=60 ? `${d/60} h${d%60 ?` ${d%60 }min `:''}`:`${d} min`};
+                                        {d>=60 ? `${d/60} h${d%60 ?` ${d%60 }min `:''}`:`${d} min`}
                                     </option>
                                 ))}
                             </select>
                         </label>
                     </div>
                     <select name="" id="" value={form.startedFrom} onChange={(e)=>setForm({...form, startedFrom:e.target.value})}>
-                        {meetings.map((m)=>(
-                            <option value={m.id} key={m.id}>
-                                Continue from:{m.title}
+                        
+                            <option value=''>
+                                Continue from:(None)
                             </option>
+                            {meetings.map((m)=>(
+                                <option value={m.id} key={m.id}>
+                                    Continue from:{m.title}
+                                </option>
                         ))}
                     </select>
-                    <button disabled={creating} className='rounded-lg bg-indigo-600 px-4 py-2 font-medium text-white hover:bg-indigo-700 disabled:opacity-60'>{creating?'Creating..':'New Meeting'}</button>
+                    <button type="submit" disabled={creating} className='rounded-lg bg-indigo-600 px-4 py-2 font-medium text-white hover:bg-indigo-700 disabled:opacity-60'>{creating?'Creating..':'New Meeting'}</button>
                 </form>
             )}
             {error && (
@@ -134,8 +138,8 @@ export default function MeetingsSection({projectId,isLeader,}:{projectId:string;
                                         <p>{m.title}</p>
                                         {m.topic && (<p>{m.topic}</p>)}
                                         <p>{formatWhen(m.startsAt,m.duration)}
-                                            {m.staredFrom && titleOf(m.staredFrom)
-                                            ?`.continous from ${titleOf(m.staredFrom)}`:''}
+                                            {m.startedFrom && titleOf(m.startedFrom)
+                                            ?`.continous from ${titleOf(m.startedFrom)}`:''}
                                         </p>
                                     </div>
                                     <div>

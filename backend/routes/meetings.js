@@ -5,6 +5,7 @@ import requireRole from '../middleware/projectrole.js';
 import requireauth from '../middleware/auth.js';
 import Meetings from '../models/Meetings.js';
 import Membership from '../models/Membership.js';
+import { meetingStatus } from '../lib/meetingStatus.js';
 import Meetingrole from '../models/Meetingroles.js';
 import CanvasVersion from '../models/CanvasVersion.js';
 import { flushMeetingCanvas,refreshMeetingRoles } from '../sockets/meetingSocket.js';
@@ -14,9 +15,9 @@ router.use(requireauth);
 function meetingjson(m,myRole){
     const startsAt=m.startsAt??m.createdAt;
     const duration=m.duration??60;
-    const endsAt=new Date(startsAt.getTime()+duration*60000);
     const now=Date.now();
-    const status=now<startsAt.getTime()?'upcoming':now<endsAt.getTime()?'live':'ended';
+    const status=meetingStatus(m);
+    const endsAt=m.endedAt??new Date(startsAt.getTime()+duration*60000);
     return {id:m._id,myRole,startsAt,endsAt,duration,status,title:m.title,topic:m.topic,projectId:m.project,startedFrom:m.startedFrom,createdAt:m.createdAt};
 }
 function readmeetingfields (body){
@@ -59,10 +60,11 @@ router.post('/',requireRole('leader'),async(req,res)=>{
     });
     let startingElements=[];
     if(startedFrom){
-        await flushMeetingCanvas(startedFrom);
-        const prevCanvas=await CanvasVersion.findOne({meeting:startedFrom});
-        if(prevCanvas){
-            startingElements=prevCanvas.toObject().elements;
+        const files=await CanvasFile.find({meeting:startedFrom});
+        if(files.length){
+            await CanvasFile.insertMany(files.map((f)=>({
+                meeting:meetingId,fileId:f.fileId,key:f.key,mime:f.mime,size:f.size,user:f.user
+            })));
         }
     }
     await CanvasVersion.create({
@@ -92,6 +94,11 @@ router.get('/',requireRole(),async(req,res)=>{
 router.get('/:meetingId',requiremeetingrole(),(req,res)=>{
     res.json(meetingjson(req.meeting,req.meetingrole));
 })
+router.get('/:meetingId/canvas',requiremeetingrole(),async(req,res)=>{
+    await flushMeetingCanvas(req.meeting._id);
+    const cv=await CanvasVersion.findOne({meeting:req.meeting._id});
+    res.json({elements:cv?cv.toObject().elements:[]});
+})
 router.get('/:meetingId/members',requiremeetingrole(),async(req,res)=>{
     const isLeader=req.meetingrole==='leader';
     const memberships=await Membership.find({project:req.params.projectId}).populate('user','name email').sort({createdAt:-1});
@@ -110,6 +117,21 @@ router.get('/:meetingId/members',requiremeetingrole(),async(req,res)=>{
         }))
 );
 });
+router.post('/:meetingId/end',requiremeetingrole('leader'),async(req,res)=>{
+    await flushMeetingCanvas(req.meeting._id);
+    req.meeting.endedAt=Date.now();
+    await req.meeting.save();
+    const io=req.app.get('io');
+    const id=String(req.meeting._id);
+    io?.to(`meeting:${id}`).emit('meeting:ended');
+    for(const s of (await io?.in(`meeting:${id}`).fetchSockets())??[]){
+        s.leave(`meeting:${id}`);
+        s.leave(`ideas:${id}`);
+        s.data.meetingId=null;
+    }
+
+    res.json({ok:true});
+})
 router.patch('/:meetingId/members/:userId',requiremeetingrole('leader'),async(req,res)=>{
     const {role}=req.body;
     if(!['editor','viewer'].includes(role)){

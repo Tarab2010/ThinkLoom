@@ -4,6 +4,7 @@ import requireAuth from '../middleware/auth.js';
 import {requiremeetingrole} from '../middleware/meetingrole.js';
 import { detectType } from '../lib/fileTypes.js';
 import { saveFile, pathFor, removeFile } from '../lib/storage.js';
+import { meetingStatus } from '../lib/meetingStatus.js';
 
 const router=Router({mergeParams:true});
 router.use(requireAuth);
@@ -13,6 +14,9 @@ const MAX_FILES_PER_MEETING=200;
 
 router.put('/:fileId',requiremeetingrole('leader','editor'),express.raw({type:'*/*',limit:`${MAX_MB}mb`}),async(req,res)=>{
     const {fileId}=req.params;
+    if(meetingStatus(req.meeting)!=='live'){
+        return res.status(403).json({error:'meeting is not live'});
+    }
     if(!FILE_ID.test(fileId))   {
         return res.status(400).json({error:'Bad file'});
     } 
@@ -41,7 +45,7 @@ router.put('/:fileId',requiremeetingrole('leader','editor'),express.raw({type:'*
             size:req.body.length,
             user:req.userId
         });
-        res.status(201).json({ok:true});
+        
     }
     catch(err){
         await removeFile(key);
@@ -55,7 +59,7 @@ router.put('/:fileId',requiremeetingrole('leader','editor'),express.raw({type:'*
 router.get('/:fileId',requiremeetingrole(),async(req,res)=>{
     const file=FILE_ID.test(req.params.fileId)?await CanvasFile.findOne({meeting:req.meeting._id, fileId:req.params.fileId}):null;
     if(!file){
-        return res.staus(404).json({error:'File not found'});
+        return res.status(404).json({error:'File not found'});
     }
     res.sendFile(
         pathFor(file.key),{
