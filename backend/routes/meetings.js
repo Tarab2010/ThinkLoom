@@ -5,10 +5,11 @@ import requireRole from '../middleware/projectrole.js';
 import requireauth from '../middleware/auth.js';
 import Meetings from '../models/Meetings.js';
 import Membership from '../models/Membership.js';
+import CanvasFile from '../models/CanvasFile.js';
 import { meetingStatus } from '../lib/meetingStatus.js';
 import Meetingrole from '../models/Meetingroles.js';
 import CanvasVersion from '../models/CanvasVersion.js';
-import { flushMeetingCanvas,refreshMeetingRoles } from '../sockets/meetingSocket.js';
+import { flushMeetingCanvas,importMeetingElements,refreshMeetingRoles } from '../sockets/meetingSocket.js';
 const router=Router({mergeParams:true});
 router.use(requireauth);
 
@@ -136,6 +137,31 @@ router.get(`/:meetingId/canvas`,requiremeetingrole(),async(req,res)=>{
     await flushMeetingCanvas(req.meeting._id);
     const cv=await CanvasVersion.findOne({meeting:req.meeting._id});
     res.json({elements:cv?cv.toObject().elements:[]});
+})
+router.post('/:meetingId/import-canvas',requiremeetingrole('leader'),async(req,res)=>{
+    const {fromMeetingId}=req.body;
+    if(!mongoose.isValidObjectId(fromMeetingId) || String(fromMeetingId)===String(req.meeting._id)){
+        return res.status(400).json({error:'Pick a different meeting'});
+    }
+    if(meetingStatus(req.meeting)==='ended'){
+        return res.status(403).json({error:'This meeting has ended'});
+    }
+    const source=await Meetings.findOne({_id:fromMeetingId,project: req.params.projectId});
+    if(!source){
+        return res.status(404).json({error:'Previous meeting not found'});
+    }
+    await flushMeetingCanvas(source._id);
+    const cv=await CanvasVersion.findOne({meeting:source._id});
+    const elements=cv?cv.toObject().elements:[];
+    const files=await CanvasFile.find({meeting:source._id});
+    if(files.length){
+        await CanvasFile.insertMany(
+            files.map((f)=>({meeting:req.meeting._id,fileId:f.fileId,key:f.key,mime:f.mime,size:f.size,user:f.user})),
+            {ordered:false}
+        ).catch((err)=>{if (err.code!==11000 && !err.writeErrors) throw err;});
+    }
+    const added=await importMeetingElements(req.app.get('io'),req.meeting._id,elements);
+    res.json({ok:true,added});
 })
 router.patch('/:meetingId/members/:userId',requiremeetingrole('leader'),async(req,res)=>{
     const {role}=req.body;

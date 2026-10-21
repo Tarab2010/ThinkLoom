@@ -11,7 +11,7 @@ type InitialData=ComponentProps<typeof Excalidraw>['initialData'];
 
 type Person={socketId:string,userId:string,name:string,role:Role};
 type JoinReply={ok:true,role:Role,elements:SceneElement[]}|{waiting:true} |{error:string};
-export default function CanvasBoard({projectId,meetingId,onRoleChange,}:{projectId:string;meetingId:string;onRoleChange?:(role:Role)=>void}){
+export default function CanvasBoard({projectId,meetingId,onRoleChange,onEnded}:{projectId:string;meetingId:string;onRoleChange?:(role:Role)=>void;onEnded?:()=>void}){
     const[initial,setInitial]=useState<InitialData |null>(null);
     const [role,setRole]=useState<Role|null>(null);
     const [online,setOnline]=useState<Person[]>([]);
@@ -30,6 +30,8 @@ export default function CanvasBoard({projectId,meetingId,onRoleChange,}:{project
     const lastPointer=useRef(0);
     const onRoleRef=useRef(onRoleChange);
     const imagesRef=useRef<ImageSync|null>(null);
+    const onEndedRef=useRef(onEnded);
+    useEffect(()=>{onEndedRef.current=onEnded;})
     useEffect(()=>{
         onRoleRef.current=onRoleChange;
     })
@@ -192,6 +194,10 @@ export default function CanvasBoard({projectId,meetingId,onRoleChange,}:{project
             setStatus('offline');
             setError('leader kicked you out of the meeting');
         });
+        socket.on('meeting:ended',()=>{
+            joined.current=false;
+            onEndedRef.current?.();
+        })
         socket.on('lobby:update',setLobby);
         socket.on('meeting:error',({message}:{message:string})=>setError(message));
         socket.onAny((event, ...args) => console.log('SOCKET EVENT', event, args));

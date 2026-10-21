@@ -109,6 +109,26 @@ function scheduleSave(meetingId, room) {
 export function flushMeetingCanvas(meetingId) {
     return saveRoom(String(meetingId));
 }
+export async function importMeetingElements(io,meetingId,elements){
+    const id=String(meetingId);
+    const room=await loadroom(id);
+    const added=[];
+    for (const el of elements){
+        if(el.isDeleted || room.elements.has(el.id)){
+            continue;
+        }
+        if(room.elements.size>=MAX_ELEMENTS){
+            break;
+        }
+        room.elements.set(el.id,el);
+        added.push(el);
+    }
+    if(added.length){
+        scheduleSave(id,room);
+        io?.to(roomName(id)).emit('scene:update',{elements:added});
+    }
+    return added.length;
+}
 const validElement = (el) =>
     el && typeof el === 'object' &&
     typeof el.id === 'string' &&
