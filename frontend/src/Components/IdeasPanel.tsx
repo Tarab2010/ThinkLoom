@@ -26,6 +26,7 @@ export default function IdeasPanel({ projectId, meetingId, isLeader }: { project
   const [fileKey, setFileKey] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [presentedId, setPresentedId] = useState<string | null>(null);
   const [previewId, setPreviewId] = useState<string | null>(null);
   const [stageId, setStageId] = useState<string | null>(null);
   const [requested, setRequested] = useState<string[]>([])
@@ -42,7 +43,16 @@ export default function IdeasPanel({ projectId, meetingId, isLeader }: { project
     finally {
       setLoading(false);
     }
-  }, [base]);
+    try{
+      const p= await api<{ideaId:string |null}>(`${base}/present`);
+      setPresentedId(p.ideaId);
+      if(!isLeader){
+      setPreviewId(p.ideaId);}
+    }
+    catch{
+      
+    }
+  }, [base,isLeader]);
   useEffect(() => {
     const socket = createSocket();
     socket.on('connect', () => {
@@ -53,6 +63,10 @@ export default function IdeasPanel({ projectId, meetingId, isLeader }: { project
     });
     socket.on('idea:votes', ({ ideaId, votes }: { ideaId: string; votes: number }) => {
       setIdeas((prev) => prev.map((i) => (i.id === ideaId ? { ...i, votes } : i)));
+    })
+    socket.on('idea:present',({ideaId}:{ideaId:string|null})=>{
+      setPresentedId(ideaId);
+      setPreviewId(ideaId);
     })
     load();
     socket.connect();
@@ -68,6 +82,18 @@ export default function IdeasPanel({ projectId, meetingId, isLeader }: { project
     }
     setError('');
     setFile(picked);
+  }
+  async function tooglePresent(idea:Idea){
+    setError('');
+    try{
+      await api(`${base}/present`,{
+        method:'POST',
+        body:JSON.stringify({ideaId:presentedId===idea.id?null:idea.id})
+      })
+    }
+    catch(err){
+      setError(err instanceof Error ? err.message : 'Could not present the data');
+    }
   }
   async function onSubmit(e: FormSubmitEvent) {
     e.preventDefault();
@@ -134,10 +160,10 @@ export default function IdeasPanel({ projectId, meetingId, isLeader }: { project
         <ul className="mt-3 space-y-2">
           {
             shown.map((idea) => {
-              const open = previewId === idea.id
+              const open = isLeader?previewId === idea.id:presentedId===idea.id;
               const fileUrl = apiUrl(`${base}/${idea.id}/file`);
               return (
-                <li className="rounded-xl border bg-white p-4" key={idea.id}>
+                <li className={`rounded-xl border bg-white p-4 ${presentedId===idea.id?'ring-2 ring-indigo-500':''}`} key={idea.id}>
                   <div className="flex items-start justify-between gap-4" >
                     <div className="min-w-0" >
                       <p className="font-medium" >{idea.title}</p>
@@ -149,9 +175,19 @@ export default function IdeasPanel({ projectId, meetingId, isLeader }: { project
                         <p className="mt-2 text-xs text-gray-700">
                           {KIND_LABEL[idea.attachment.kind]} .{idea.attachment.name}(
                             {formatSize(idea.attachment.size)}) .{''}
-                          <button className="text-indigo-600 hover:underline" onClick={()=>setPreviewId(open?null:idea.id)} >
-                            {open?'Hide Preview':'Preview'}
-                          </button>
+                          {isLeader ?(
+                            <>
+                            <button className="text-indigo-600 hover:underline" onClick={() => setPreviewId(open ? null : idea.id)}>
+                                                          {open ? 'Hide Preview' : 'Preview'}
+                            </button>
+                            {'.'}
+                            <button className="font-medium text-indigo-700 hover:underline" onClick={()=>tooglePresent(idea)}>
+                              {presentedId===idea.id?'Stop Presening':'Present to everyone'}
+                            </button>
+                            </>
+                          ):(
+                            presentedId===idea.id && <span className="font-medium text-indigo-600" >Being presented now</span>
+                          )}
                         </p>
                       )}
                     </div>

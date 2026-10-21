@@ -294,6 +294,10 @@ export function initSockets(server) {
                     socket.emit('meeting:error', { message: 'you can only view this canva' });
                     return;
                 }
+                if(Date.now()>socket.data.endsAt){
+                    socket.emit('meeting:error',{message:'Meeting has ended'});
+                    return;
+                }
                 const elements = payload?.elements;
                 if (!Array.isArray(elements) || elements.length === 0 || elements.length > MAX_PER_UPDATE) {
                     return;

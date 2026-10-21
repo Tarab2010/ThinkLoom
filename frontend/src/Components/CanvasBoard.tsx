@@ -11,7 +11,7 @@ type InitialData=ComponentProps<typeof Excalidraw>['initialData'];
 
 type Person={socketId:string,userId:string,name:string,role:Role};
 type JoinReply={ok:true,role:Role,elements:SceneElement[]}|{waiting:true} |{error:string};
-export default function CanvasBoard({projectId,meetingId,onRoleChange,onEnded}:{projectId:string;meetingId:string;onRoleChange?:(role:Role)=>void;onEnded?:()=>void}){
+export default function CanvasBoard({projectId,meetingId,onRoleChange,onEnded,onAdmitted}:{projectId:string;meetingId:string;onRoleChange?:(role:Role)=>void;onEnded?:()=>void;onAdmitted?:()=>void}){
     const[initial,setInitial]=useState<InitialData |null>(null);
     const [role,setRole]=useState<Role|null>(null);
     const [online,setOnline]=useState<Person[]>([]);
@@ -31,6 +31,7 @@ export default function CanvasBoard({projectId,meetingId,onRoleChange,onEnded}:{
     const onRoleRef=useRef(onRoleChange);
     const imagesRef=useRef<ImageSync|null>(null);
     const onEndedRef=useRef(onEnded);
+    const onAdmittedRef=useRef(onAdmitted);
     useEffect(()=>{onEndedRef.current=onEnded;})
     useEffect(()=>{
         onRoleRef.current=onRoleChange;
@@ -105,6 +106,7 @@ export default function CanvasBoard({projectId,meetingId,onRoleChange,onEnded}:{
             applyRemote(waiting);
         }
     },[applyRemote])
+    useEffect(()=>{onAdmittedRef.current=onAdmitted});
     useEffect(()=>{
         const socket=createSocket();
         socketRef.current=socket;
@@ -197,6 +199,10 @@ export default function CanvasBoard({projectId,meetingId,onRoleChange,onEnded}:{
         socket.on('meeting:ended',()=>{
             joined.current=false;
             onEndedRef.current?.();
+        })
+        socket.on('meeting:admitted',()=>{
+            join();
+            onAdmittedRef.current?.();
         })
         socket.on('lobby:update',setLobby);
         socket.on('meeting:error',({message}:{message:string})=>setError(message));

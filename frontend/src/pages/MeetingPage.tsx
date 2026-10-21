@@ -32,6 +32,7 @@ export default function MeetingPage(){
     const [fromId,setFromId]=useState('');
     const [importing,setImporting]=useState(false);
     const [info,setInfo]=useState('');
+    const [ideasKey,setIdeasKey]=useState(0);
     const[members,setMembers]=useState<Member[]>([]);
     const [error,setError]=useState('');
     const base=`/projects/${projectId}/meetings/${meetingId}`;
@@ -175,11 +176,12 @@ export default function MeetingPage(){
                     meetingId={meetingId}
                     onRoleChange={(r)=>setMeeting((m)=>(m?{...m,myRole:r}:m))}
                     onEnded={()=>setMeeting((m)=>(m?{...m,status:'ended'}:m))}
+                    onAdmitted={()=>setIdeasKey((k)=>k+1)}
                     />
                 )}
             </div>
             {projectId && meetingId && (meeting.status==='live'?
-                <IdeasPanel key={meetingId} projectId={projectId} meetingId={meetingId} isLeader={isLeader} />
+                <IdeasPanel key={`${meetingId}-${ideasKey}`} projectId={projectId} meetingId={meetingId} isLeader={isLeader} />
             :'')}
             
             <h2>who can do what in this meeting</h2>

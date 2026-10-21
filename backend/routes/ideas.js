@@ -13,6 +13,7 @@ const router=Router({mergeParams:true});
 router.use(requireauth);
 const member=requiremeetingrole();
 const MAX_IDEAS_PER_USER=30;
+const presenting=new Map();
 const MAX_FILE_MB=10;
 const upload=multer({
     storage:multer.memoryStorage(),
@@ -157,6 +158,30 @@ router.put('/:ideaId/vote',member,async(req,res)=>{
     live(req)?.emit('idea:votes',{ideaId:String(idea._id),votes});
     res.json({votes,myVote:true});
 });
+router.get('/present',member,(req,res)=>{
+    res.json({ideaId:presenting.get(String(req.meeting._id))??null})
+})
+router.post('/present',requiremeetingrole('leader'),async(req,res)=>{
+    if(meetingStatus(req.meeting)!=='live'){
+        return res.status(403).json({error:'meeting is not live now'});
+    }
+    const key=String(req.meeting._id);
+    let ideaId=req.body.ideaId||null;
+    console.log('Present',req.body,'meeting',String(req.meeting._id))
+    if(ideaId){
+        const idea=mongoose.isValidObjectId(ideaId)?await Idea.findOne({_id:ideaId,meeting:req.meeting._id}):null;
+        if(!idea){
+            return res.status(404).json({error:'idea not found'});
+        }
+        ideaId=String(idea._id);
+        presenting.set(key,ideaId);
+    }
+    else{
+        presenting.delete(key);
+    }
+    live(req)?.emit('idea:present',{ideaId});
+    res.json({ideaId});
+})
 router.delete('/:ideaId/vote',member,async(req,res)=>{
     if(meetingStatus(req.meeting)!=='live'){
         return res.status(403).json({error:'meeting is not live'});

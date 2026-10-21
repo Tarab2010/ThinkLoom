@@ -4,7 +4,7 @@ import { apiUrl } from './api';
 export interface imageLike{
     type:string,
     fileId?:string | null,
-    isDeleted?:boolean
+    isDeleted?:boolean,
 }
 type FileId=BinaryFileData['id'];
 type DataURL=BinaryFileData['dataURL'];
