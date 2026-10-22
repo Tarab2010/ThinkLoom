@@ -12,10 +12,10 @@ export interface Attachment {
     kind: 'image' | 'pdf' | 'docx',
     size: number,
 }
-export function formatSize(bytes: number) {
+export function setsize(bytes: number) {
     return bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))}KB` : `${(bytes / 1024 / 1024).toFixed(1)}MB`
 }
-const MAX_PAGES = 30;
+const PAGES_LIMIT = 30;
 const CANVAS_MAX_SIDE = 1600;
 interface Selection {
     page: number,
@@ -37,7 +37,7 @@ async function pdfPages(blob: Blob, add: (c: HTMLCanvasElement) => void, stopped
     const task = pdfjs.getDocument({ data: new Uint8Array(await blob.arrayBuffer()) });
     const pdf = await task.promise;
     try {
-        const count = Math.min(pdf.numPages, MAX_PAGES);
+        const count = Math.min(pdf.numPages, PAGES_LIMIT);
         for (let n = 1; n <=count && !stopped(); n++) {
             const page = await pdf.getPage(n);
             const viewport = page.getViewport({ scale: 1.6 });
@@ -60,7 +60,7 @@ async function docxPage(blob: Blob, add: (c: HTMLCanvasElement) => void, stopped
     document.body.appendChild(host);
     try {
         await renderAsync(blob, host, host, { inWrapper: false, breakPages: true });
-        const sections = Array.from(host.querySelectorAll<HTMLElement>('section.docx')).slice(0, MAX_PAGES);
+        const sections = Array.from(host.querySelectorAll<HTMLElement>('section.docx')).slice(0, PAGES_LIMIT);
         for (const section of sections) {
             if (stopped()) {
                 break;
@@ -228,7 +228,7 @@ export default function IdealFileViewer({ url, attachment, canCrop = false,sourc
         <div>
             <div className='mb-2 flex items-center justify-between gap-3 text-sm' >
                 <span className='truncate text-gray-200' >
-                    {attachment.name}. {formatSize(attachment.size)}
+                    {attachment.name}. {setsize(attachment.size)}
                 </span>
                 <a href={`${url}?download=1`} className='shrink-0 text-indigo-300 hover:underline hover:text-white ' >Download Original</a>
             </div>

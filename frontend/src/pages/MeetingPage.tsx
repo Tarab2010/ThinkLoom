@@ -6,6 +6,7 @@ import type { Role } from "../store/projectstore";
 import CanvasBoard from "../Components/CanvasBoard";
 import IdeasPanel, { type PreviewData } from "../Components/IdeasPanel";
 import IdealFileViewer from "../Components/IdeaFileViewer";
+import CallPannel from "../Components/CallPannel";
 import ArchivedCanvas from "../Components/ArchivedCanvas";
 interface MeetingDetail {
     id: string,
@@ -201,6 +202,9 @@ export default function MeetingPage() {
                             {ending ? 'Ending...' : 'End meeting'}
                         </button>
                     )}
+                    {meeting.status==='live' && projectId && meetingId &&(
+                         <CallPannel key={`${meetingId}-${ideasKey}`} projectId={projectId} meetingId={meetingId} isLeader={isLeader} startcall={true} />
+                    ) }
                 </div>
             </header>
 
@@ -234,6 +238,7 @@ export default function MeetingPage() {
                                 onRoleChange={(r) => setMeeting((m) => (m ? { ...m, myRole: r } : m))}
                                 onEnded={() => navigate(`/projects/${projectId}`)}
                                 onAdmitted={() => setIdeasKey((k) => k + 1)}
+                                Onremoved={()=>navigate(`/projects/${projectId}`)}
                             />
                     )}
                     </div>

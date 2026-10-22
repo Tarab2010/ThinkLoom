@@ -58,7 +58,7 @@ export default function MeetingsSection({projectId,isLeader,}:{projectId:string;
             cancelled=true;
         }
     },[projectId]);
-    async function onCreate(e:FormSubmitEvent){
+    async function CreateMeeting(e:FormSubmitEvent){
         e.preventDefault();
         setError('');
         setCreating(true);
@@ -84,12 +84,11 @@ export default function MeetingsSection({projectId,isLeader,}:{projectId:string;
         }
     }
     const input='w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-indigo-500';
-    const titleOf=(id:string |null)=>meetings.find((m)=>m.id===id)?.title;
     return (
         <section className="mt-10 flex items-center justify-center flex-col ">
             <h2 className="font-medium">Meetings</h2>
             {isLeader && (
-                <form onSubmit={onCreate}  className="mt-3 w-9/10 border-1 gap-2 rounded-2xl bg-white/5 shadow-2xl backdrop-blur-2xl p-4 z-10  m-7 space-y-3">
+                <form onSubmit={CreateMeeting}  className="mt-3 w-9/10 border gap-2 rounded-2xl bg-white/5 shadow-2xl backdrop-blur-2xl p-4 z-10  m-7 space-y-3">
                     <input type="text" className={input} value={form.title} placeholder="Meeting title" onChange={(e)=>setForm({...form, title:e.target.value})} />
                     <input type="text" className={input} value={form.topic} placeholder="Meeting's topic" onChange={(e)=>setForm({...form, topic:e.target.value})} />
                     <div className="grid gap-3 sm:grid-cols-2">

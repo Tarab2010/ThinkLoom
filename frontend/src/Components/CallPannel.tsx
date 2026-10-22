@@ -1,0 +1,95 @@
+import { useEffect, useState } from "react";
+import {LiveKitRoom, GridLayout, ParticipantTile, RoomAudioRenderer,ControlBar, useTracks, useParticipants,} from "@livekit/components-react";
+import { Track } from "livekit-client";
+import "@livekit/components-styles";
+import { api } from "../lib/api";
+
+function Screen(){
+    const tracks =useTracks([{source:Track.Source.Camera,withPlaceholder:true}]);
+    return(
+        <GridLayout tracks={tracks} style={{height:"100%"}} >
+            <ParticipantTile/>
+        </GridLayout>
+    )
+}
+function Controls({base}:{base:string}){
+
+    const people=useParticipants();
+    const [err,setErr]=useState('');
+    async function act(identity:string, action:string){
+        setErr('');
+        try{
+            await api(`${base}/calls/moderate`,{
+                method:'POST',
+                body:JSON.stringify({identity,action})
+            })
+        }
+        catch(err){
+            setErr(err instanceof Error ? err.message : "Action failed");
+        }
+    }
+    const others=people.filter((p)=>!p.isLocal);
+    return(
+        <div className="relative " >
+            {err && <p>{err}</p> }
+            {others.length===0 && <p>no one else in the call</p> }
+            {others.map((p)=>(
+                <div  className="flex flex-col gap-2" key={p.identity} >
+                    <span>{p.name || p.identity}</span>
+                    <div className="flex items-center justify-center gap-2" >
+                    <button onClick={() => act(p.identity, "mic-off")} >Mute</button>
+                    <button onClick={() => act(p.identity, "camera-off")} >CameraOff</button>
+                    <button onClick={() => act(p.identity, "remove")} >Remove</button>
+                    </div>
+                </div>
+            ))}
+        </div>
+    )
+}
+export default function CallPannel({projectId, meetingId, isLeader, startcall }:{projectId:string;meetingId:string;isLeader:boolean;startcall?:boolean}){
+    const base = `/projects/${projectId}/meetings/${meetingId}`;
+    const [error,setError]=useState('');
+    const [manage,setManage]=useState(false);
+    const [connection, setConnection] = useState<{ token: string; url: string } | null>(null);
+    const [busy, setBusy] = useState(false);
+    useEffect(()=>{
+        if(startcall){
+            void join()
+        }
+    },[])
+    async function join(){
+        setBusy(true);
+        setError('');
+        try{
+            setConnection(await api<{token:string; url:string}>(`${base}/calls`));
+        }
+        catch(err){
+            setError(err instanceof Error ?err.message :'unable to connect');
+        }
+        finally{
+            setBusy(false);
+        }
+      }
+    if(!connection){
+        return(
+        <div className="flex items-center gap-2" >
+            <button disabled={busy} onClick={join} className="rounded-lg bg-indigo-600 px-3 py-1.5 text-sm text-white disabled:opacity-60" >
+                {busy?'Connecting...':'Join Call'}
+            </button>
+            {error && <p className="text-xs text-red-600" >{error}</p> }
+        </div>)
+    }
+    return(
+        <div data-lk-theme='default' className="fixed bottom-4 left-4 z-40 w-72 overflow-hidden rounded-xl border bg-gray-900 shadow-xl" >
+            <LiveKitRoom token={connection.token} serverUrl={connection.url} connect audio video onDisconnected={()=>setConnection(null)} >
+                <div className="h-48" ><Screen/></div>
+                <RoomAudioRenderer/>
+                <ControlBar  variation="minimal" controls={{chat:false, screenShare:false}} />
+                { isLeader && (<>
+                <button onClick={()=>setManage((m)=>!m)} className="w-full bg-gray-800 py-1 text-xs text-white" >{manage ? 'Hide controls' : 'Manage participants'}</button>
+                {manage && <Controls base={base}/>}
+                </>)}
+            </LiveKitRoom>
+        </div>
+    )
+}

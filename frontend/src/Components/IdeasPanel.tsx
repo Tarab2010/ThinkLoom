@@ -1,7 +1,7 @@
 import { createSocket } from "../lib/socket";
 import { api, apiUrl } from "../lib/api";
 import { useState, useEffect, useCallback, type ComponentProps, type ChangeEvent } from "react";
-import IdeaFileViewer, { type Attachment, formatSize } from "./IdeaFileViewer";
+import IdeaFileViewer, { type Attachment, setsize } from "./IdeaFileViewer";
 type FormSubmitEvent = Parameters<NonNullable<ComponentProps<'form'>['onSubmit']>>[0];
 export interface PreviewData{
   url:string;
@@ -201,7 +201,7 @@ export default function IdeasPanel({ projectId, meetingId, isLeader, previewId,s
               </div>
               {idea.attachment && (
                 <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
-                  <span className="text-gray-500">{KIND_LABEL[idea.attachment.kind]} · {formatSize(idea.attachment.size)}</span>
+                  <span className="text-gray-500">{KIND_LABEL[idea.attachment.kind]} · {setsize(idea.attachment.size)}</span>
                   {isLeader ? (
                     <>
                       <button className="text-indigo-600 hover:underline" onClick={() => setPreviewId(open ? null : idea.id)}>

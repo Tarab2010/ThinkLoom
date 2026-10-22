@@ -7,6 +7,7 @@ import ideaRoutes from './routes/ideas.js'
 import authRoutes from './routes/auth.js';
 import projectRoutes from './routes/projects.js';
 import meetingRoutes from './routes/meetings.js';
+import callRouter from './routes/calls.js'
 import { connectDB } from './config/db.js';
 import { initSockets } from './sockets/meetingSocket.js';
 import canvasFileRoutes from './routes/canvasFiles.js';
@@ -19,6 +20,10 @@ app.use(cookieParser());
 app.get('/api/health',(req,res)=>{
     res.json({ok:true});
 })
+app.use('/api/projects/:projectId/meetings/:meetingId/calls',(req, res, next) => {
+  console.log('CALLS HIT', req.method, req.originalUrl);
+  next();
+},callRouter);
 app.use('/api/auth', authRoutes);
 app.use('/api/projects',projectRoutes);
 app.use('/api/projects/:projectId/meetings/:meetingId/ideas',ideaRoutes);

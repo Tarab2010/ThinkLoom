@@ -1,5 +1,5 @@
 import { type meetingstatus } from "../lib/meetingTime";
-export default function Meetblocks({title, topic , duration, startsAt, startedFrom, status }:{title:string;topic:string;duration:number;startsAt:string;startedFrom:string|null; status:meetingstatus}){
+export default function Meetblocks({title, topic , duration, startsAt, status }:{title:string;topic:string;duration:number;startsAt:string;startedFrom:string|null; status:meetingstatus}){
 
     return(
         <div className="flex h-52 w-full overflow-hidden min-w-0  flex-col items-center border-2 backdrop-blur-3xl justify-between rounded-xl border-black shadow-2xl bg-gray-200" >

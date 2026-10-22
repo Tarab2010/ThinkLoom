@@ -1,72 +1,72 @@
 import { useEffect, useState } from "react";
-import {Link,useParams} from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import type { Role } from "../store/projectstore";
 import MeetingsSection from "../Components/MeetingsSection";
-import {api} from '../lib/api';
+import { api } from '../lib/api';
 
-interface ProjectDetail{
-    id:string;
-    name:string;
-    description:string;
-    category:string;
-    role:Role;
-    invitecode?:string;
+interface ProjectDetail {
+    id: string;
+    name: string;
+    description: string;
+    category: string;
+    role: Role;
+    invitecode?: string;
 }
-interface Member{
-    userId:string;
-    name:string;
-    role:Role;
-    email?:string;
+interface Member {
+    userId: string;
+    name: string;
+    role: Role;
+    email?: string;
 }
 
-export default function ProjectPage(){
-    const {projectId}=useParams();
-    const [project,setProject]=useState<ProjectDetail|null>(null);
-    const [members, setMembers]=useState<Member[]>([]);
-    const [error, setError]=useState('');
-    const [copied, setCopied]=useState(false);
-    useEffect(()=>{
-        let cancelled=false;
-        (async()=>{
-            try{
-                const [p,m]=await Promise.all([
+export default function ProjectPage() {
+    const { projectId } = useParams();
+    const [project, setProject] = useState<ProjectDetail | null>(null);
+    const [members, setMembers] = useState<Member[]>([]);
+    const [error, setError] = useState('');
+    const [copied, setCopied] = useState(false);
+    useEffect(() => {
+        let cancelled = false;
+        (async () => {
+            try {
+                const [p, m] = await Promise.all([
                     api<ProjectDetail>(`/projects/${projectId}`),
                     api<Member[]>(`/projects/${projectId}/members`)
                 ]);
-                if(!cancelled){
+                if (!cancelled) {
                     setProject(p);
                     setMembers(m);
                 }
             }
-            catch(err){
-                if(!cancelled){
-                    setError(err instanceof Error?err.message:'Failed to load project');
+            catch (err) {
+                if (!cancelled) {
+                    setError(err instanceof Error ? err.message : 'Failed to load project');
                 }
             }
         })();
-        return ()=>{
-            cancelled=true;
+        return () => {
+            cancelled = true;
         };
-    },[projectId])
-    async function changeRole(userId:string, role:Role){
-        try{
-            await api(`/projects/${projectId}/members/${userId}`,{
-                method:'PATCH',
-                body:JSON.stringify({role}),
+    }, [projectId])
+    async function changeRole(userId: string, role: Role) {
+        try {
+            await api(`/projects/${projectId}/members/${userId}`, {
+                method: 'PATCH',
+                body: JSON.stringify({ role }),
             });
-            setMembers((ms)=>ms.map((m)=>(m.userId===userId?{...m,role}:m)))
+            setMembers((ms) => ms.map((m) => (m.userId === userId ? { ...m, role } : m)))
         }
-        catch(err){
-            setError(err instanceof Error?err.message:'Could not change role');
+        catch (err) {
+            setError(err instanceof Error ? err.message : 'Could not change role');
         }
     }
-    async function CopyInvite(){
-        const link=`${window.location.origin}/join/${project?.invitecode}`
+    async function CopyInvite() {
+        const link = `${window.location.origin}/join/${project?.invitecode}`
         await navigator.clipboard.writeText(link);
         setCopied(true);
-        setTimeout(()=>setCopied(false),2000);
+        setTimeout(() => setCopied(false), 2000);
     }
-    if(error && !project){
+    if (error && !project) {
         return (
             <div className="p-8">
                 <p className="text-red-600">{error}</p>
@@ -74,57 +74,57 @@ export default function ProjectPage(){
             </div>
         )
     }
-    if(!project){
+    if (!project) {
         return <p className="p-8 text-gray-500">Loading...</p>
     }
-    const isleader= project.role==='leader';
+    const isleader = project.role === 'leader';
     return (
         <div className="mx-full bg-gray-300 max-w-full p-8">
             <div className="flex relative flex-col items-center justify-center gap-5" >
-            <Link className="text-m font-semibold absolute top-2 left-0 text-indigo-600 hover:underline" to='/'> { `<-Dashboard`}</Link>
-            
-            <div className="mt-3 flex item-center justify-center">
-                <h1 className="text-2xl font-semibold">{project.name}</h1>
-            </div>
-            <p className="mt-1 text-gray-500">{project.category}
-                {project.description}
-            </p>
+                <Link className="text-m font-semibold absolute top-2 left-0 text-indigo-600 hover:underline" to='/'> {`<-Dashboard`}</Link>
+
+                <div className="mt-3 flex item-center justify-center">
+                    <h1 className="text-2xl font-semibold">{project.name}</h1>
+                </div>
+                <p className="mt-1 text-gray-500">{project.category}
+                    {project.description}
+                </p>
             </div>
             {
-                isleader && project.invitecode &&(
+                isleader && project.invitecode && (
                     <div className="w-full flex items-center  justify-center" >
-                    <div className="mt-6 w-1/2  rounded-xl shadow-2xl  border bg-white/20 p-4">
-                        <p className="text-sm font-medium">Invite Link</p>
-                        <p className="mt-1 break-all text-sm text-gray-600">{window.location.origin}/join/{project.invitecode}</p>
-                        <button onClick={CopyInvite} className="mt-3 border rounded-lg px-3 py-1.5 text-sm hover:bg-gray-100">{copied?'Copied':'copy link'}</button>
-                    </div>
+                        <div className="mt-6 w-1/2  rounded-xl shadow-2xl  border bg-white/20 p-4">
+                            <p className="text-sm font-medium">Invite Link</p>
+                            <p className="mt-1 break-all text-sm text-gray-600">{window.location.origin}/join/{project.invitecode}</p>
+                            <button onClick={CopyInvite} className="mt-3 border rounded-lg px-3 py-1.5 text-sm hover:bg-gray-100">{copied ? 'Copied' : 'copy link'}</button>
+                        </div>
                     </div>
                 )
             }
-            {error &&(<p className="mt-2 text-xs text-gray-500">{error}</p>)}
-            <div className="flex " >
-            <div className="w-1/4 h-auto " >
-            <h2 className="mt-8 font-medium">Members</h2>
-            <ul className="mt-3 divide-y rounded-xl border shadow-xl bg-gray/10">
-                {members.map((m)=>(
-                    <li key={m.userId} className="flex item-center justify-between p-3">
-                        <div className=" flex flex-col items-center justify-center" >
-                            <p className="font-medium">{m.name}</p>
-                            {m.email && (<p className="text-sm m-2 text-gray-500">{m.email}</p>)}
-                        </div>
-                        {isleader && m.role!=='leader'?(
-                            <select value={m.role} className="rounded-lg h-1/8 border text-sm px-2 py-1" onChange={(e)=>changeRole(m.userId,e.target.value as Role)}>
-                                <option value="editor">editor</option>
-                                <option value="viewer">viewer</option>
-                            </select>
-                        ):(
-                            <span className="text-sm text-gray-600">{m.role}</span>
-                        )}
-                    </li>
-                ))}
-            </ul>
-            </div>
-            <MeetingsSection projectId={project.id} isLeader={isleader}/>
+            {error && (<p className="mt-2 text-xs text-gray-500">{error}</p>)}
+            <div className="flex gap-2 " >
+                <div className="w-1/4 h-auto " >
+                    <h2 className="mt-8 font-medium">Members</h2>
+                    <ul className="mt-3 divide-y rounded-xl border shadow-xl bg-gray/10">
+                        {members.map((m) => (
+                            <li key={m.userId} className="flex item-center justify-between p-3">
+                                <div className=" flex flex-col items-center justify-center" >
+                                    <p className="font-medium">{m.name}</p>
+                                    {m.email && (<p className="text-sm m-2 text-gray-500">{m.email}</p>)}
+                                </div>
+                                {isleader && m.role !== 'leader' ? (
+                                    <select value={m.role} className="rounded-lg h-1/8 border text-sm px-2 py-1" onChange={(e) => changeRole(m.userId, e.target.value as Role)}>
+                                        <option value="editor">editor</option>
+                                        <option value="viewer">viewer</option>
+                                    </select>
+                                ) : (
+                                    <span className="text-sm text-gray-600">{m.role}</span>
+                                )}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+                <MeetingsSection projectId={project.id} isLeader={isleader} />
             </div>
         </div>
     )

@@ -11,10 +11,11 @@ type InitialData=ComponentProps<typeof Excalidraw>['initialData'];
 
 type Person={socketId:string,userId:string,name:string,role:Role};
 type JoinReply={ok:true,role:Role,elements:SceneElement[]}|{waiting:true} |{error:string};
-export default function CanvasBoard({projectId,meetingId,onRoleChange,onEnded,onAdmitted,members=[],onChangeRole}:
-    {projectId:string;meetingId:string;onRoleChange?:(role:Role)=>void;onEnded?:()=>void;onAdmitted?:()=>void;members?:{userId:string;name:string; role:Role}[];onChangeRole?:(userId:string,role:Role)=>void}){
+export default function CanvasBoard({projectId,meetingId,onRoleChange,onEnded,onAdmitted,members=[],onChangeRole,Onremoved}:
+    {projectId:string;meetingId:string;onRoleChange?:(role:Role)=>void;onEnded?:()=>void;onAdmitted?:()=>void;members?:{userId:string;name:string; role:Role}[];onChangeRole?:(userId:string,role:Role)=>void;Onremoved?:()=>void}){
     const[initial,setInitial]=useState<InitialData |null>(null);
     const [fromIdea,setFromIdea]= useState('')
+    const OnremovedRef=useRef(Onremoved);
     const [role,setRole]=useState<Role|null>(null);
     const [online,setOnline]=useState<Person[]>([]);
     const [status,setStatus]=useState<'connecting'|'waiting'|'live'|'offline'>('connecting');
@@ -36,6 +37,7 @@ export default function CanvasBoard({projectId,meetingId,onRoleChange,onEnded,on
     const onEndedRef=useRef(onEnded);
     const onAdmittedRef=useRef(onAdmitted);
     useEffect(()=>{onEndedRef.current=onEnded;})
+    useEffect(()=>{OnremovedRef.current=Onremoved;})
     useEffect(()=>{
         onRoleRef.current=onRoleChange;
     })
@@ -203,6 +205,7 @@ export default function CanvasBoard({projectId,meetingId,onRoleChange,onEnded,on
             joined.current=false;
             setStatus('offline');
             setError('leader kicked you out of the meeting');
+            OnremovedRef.current?.()
         });
         socket.on('meeting:ended',()=>{
             joined.current=false;
@@ -225,7 +228,7 @@ export default function CanvasBoard({projectId,meetingId,onRoleChange,onEnded,on
             socketRef.current=null;
         }
     },[projectId,meetingId,applyRemote,queueChanges,flush]);
-    function handleChange(elements:readonly SceneElement[],files:BinaryFiles,appState:AppState){
+    function changecanvas(elements:readonly SceneElement[],files:BinaryFiles,appState:AppState){
         const selId=Object.keys(appState.selectedElementIds??{})[0];
         const sel=selId?elements.find((el)=>el.id===selId):undefined;
         const cd=sel?.customData as {title?:string;author:string}|undefined;
@@ -238,7 +241,7 @@ export default function CanvasBoard({projectId,meetingId,onRoleChange,onEnded,on
         }
         queueChanges(elements);
     }
-    function handlePointer(p:{pointer:{x:number;y:number;tool:'pointer'|'laser'};button:'down'|'up'}){
+    function canvasupdate(p:{pointer:{x:number;y:number;tool:'pointer'|'laser'};button:'down'|'up'}){
         const now=Date.now();
         if(now-lastPointer.current<50){
             return;
@@ -322,8 +325,8 @@ export default function CanvasBoard({projectId,meetingId,onRoleChange,onEnded,on
         excalidrawAPI={handleApi}
         viewModeEnabled={role==='viewer'}
         isCollaborating
-        onChange={(elements,appState,files)=>handleChange(elements,files,appState)}
-        onPointerUpdate={handlePointer}
+        onChange={(elements,appState,files)=>changecanvas(elements,files,appState)}
+        onPointerUpdate={canvasupdate}
       />
     </div>
   </div>
