@@ -1,22 +1,25 @@
 import { Excalidraw,CaptureUpdateAction,reconcileElements } from "@excalidraw/excalidraw";
 import '@excalidraw/excalidraw/index.css'
-import type { BinaryFiles, Collaborator,ExcalidrawImperativeAPI,SocketId } from "@excalidraw/excalidraw/types";
+import type {AppState, BinaryFiles, Collaborator,ExcalidrawImperativeAPI,SocketId } from "@excalidraw/excalidraw/types";
 import { useCallback,useEffect,useState, type ComponentProps,useRef } from "react";
 import type { Socket } from "socket.io-client";
 import { createSocket } from "../lib/socket";
 import type { Role } from "../store/projectstore";
-import { createImageSync,type imageLike,type ImageSync } from "../lib/canvasImages";
+import { createImageSync,type imageLike,type ImageSync, type IdeaSource } from "../lib/canvasImages";
 type SceneElement={id:string,version:number,versionNonce?:number}&imageLike;
 type InitialData=ComponentProps<typeof Excalidraw>['initialData'];
 
 type Person={socketId:string,userId:string,name:string,role:Role};
 type JoinReply={ok:true,role:Role,elements:SceneElement[]}|{waiting:true} |{error:string};
-export default function CanvasBoard({projectId,meetingId,onRoleChange,onEnded,onAdmitted}:{projectId:string;meetingId:string;onRoleChange?:(role:Role)=>void;onEnded?:()=>void;onAdmitted?:()=>void}){
+export default function CanvasBoard({projectId,meetingId,onRoleChange,onEnded,onAdmitted,members=[],onChangeRole}:
+    {projectId:string;meetingId:string;onRoleChange?:(role:Role)=>void;onEnded?:()=>void;onAdmitted?:()=>void;members?:{userId:string;name:string; role:Role}[];onChangeRole?:(userId:string,role:Role)=>void}){
     const[initial,setInitial]=useState<InitialData |null>(null);
+    const [fromIdea,setFromIdea]= useState('')
     const [role,setRole]=useState<Role|null>(null);
     const [online,setOnline]=useState<Person[]>([]);
     const [status,setStatus]=useState<'connecting'|'waiting'|'live'|'offline'>('connecting');
     const [error,setError]=useState('');
+    const [peopleOpen,setPeopleOpen]=useState(false);
     const socketRef=useRef<Socket|null>(null);
     const [lobby,setLobby]=useState<{userId:string,name:string}[]>([]);
     const roleRef=useRef<Role|null>(null);
@@ -41,13 +44,14 @@ export default function CanvasBoard({projectId,meetingId,onRoleChange,onEnded,on
         imagesRef.current=images;
         images.setApi(apiRef.current);
         const onAddImage=(e:Event)=>{
-            const detail=(e as CustomEvent<{ blob: Blob; handled: boolean; done: (text: string) => void }>).detail;
+            const detail=(e as CustomEvent<{ blob: Blob;source?:IdeaSource, handled: boolean; done: (text: string) => void }>).detail;
             const r=roleRef.current;
-            if(!apiRef.current || (r!='leader' && r!=='editor')){
+            console.log('1 source',detail.source)
+            if(!apiRef.current || (r!=='leader' && r!=='editor')){
                 return;
             }
             detail.handled=true;
-            imagesRef.current?.add(detail.blob).then(()=>detail.done('Add to the canvas')).catch((err)=>detail.done(err instanceof Error? err.message:'could not add the picture'))
+            imagesRef.current?.add(detail.blob,detail.source).then(()=>detail.done('Add to the canvas')).catch((err)=>detail.done(err instanceof Error? err.message:'could not add the picture'))
         }
         window.addEventListener('thinkloom:add-image',onAddImage);
         return ()=>{
@@ -123,6 +127,9 @@ export default function CanvasBoard({projectId,meetingId,onRoleChange,onEnded,on
                 if('error' in res){
                     setError(res.error);
                     setStatus('offline');
+                    if('ended' in res && res.ended){
+                        onEndedRef.current?.();
+                    }
                     return;
                 }
                 joined.current=true;
@@ -158,7 +165,9 @@ export default function CanvasBoard({projectId,meetingId,onRoleChange,onEnded,on
             setStatus('offline');
             setError(err.message==='Not Authenticated'?'Please login again':'Could not reachh the live session');
         });
-        socket.on('scene:update',({elements}:{elements:SceneElement[]})=>applyRemote(elements));
+        socket.on('scene:update',({elements}:{elements:SceneElement[]})=>{
+            console.log('REMOTE',elements.map((e:any)=>`${e.type}${e.text?':'+e.text:''}`))
+            applyRemote(elements)});
         socket.on('pointer:update',(p:{socketId:string;userName:string;pointer:{x:number;y:number;tool:'pointer'|'laser'};button:'up'|'down'})=>{
             const api=apiRef.current;
             if(!api){
@@ -186,7 +195,6 @@ export default function CanvasBoard({projectId,meetingId,onRoleChange,onEnded,on
             }
             onRoleRef.current?.(newRole);
         });
-        socket.on('meeting:admitted',join);
         socket.on('meeting:denied',()=>{
             setStatus('offline');
             setError('Leader has not allowed you to enter')
@@ -217,7 +225,11 @@ export default function CanvasBoard({projectId,meetingId,onRoleChange,onEnded,on
             socketRef.current=null;
         }
     },[projectId,meetingId,applyRemote,queueChanges,flush]);
-    function handleChange(elements:readonly SceneElement[],files:BinaryFiles){
+    function handleChange(elements:readonly SceneElement[],files:BinaryFiles,appState:AppState){
+        const selId=Object.keys(appState.selectedElementIds??{})[0];
+        const sel=selId?elements.find((el)=>el.id===selId):undefined;
+        const cd=sel?.customData as {title?:string;author:string}|undefined;
+        setFromIdea(cd?.title? `From idea:${cd.title} by ${cd.author??'unknown'} `:'')
         const r=roleRef.current;
         const canEditNow=r==='leader' || r==='editor';
         imagesRef.current?.sync(elements,files,canEditNow)
@@ -254,51 +266,66 @@ export default function CanvasBoard({projectId,meetingId,onRoleChange,onEnded,on
         })
     const canEdit=role==='leader' || role==='editor';
     return(
-        <div>
-            <div className="mb-2 flex flexwrap items-center justify-between gap-2 text-sm">
-                <span className={status==='live'?'text-green-700':'text-amber-600'}>
-                    {status==='live'?'● Live':status==='connecting'?'● Reconnecting...' : '● Offline'}
-                    <span>{canEdit?'you can editthis canvs':'View Only :You cannot edit this canva'}</span>
-                </span>
-                {role === 'leader' && lobby.length > 0 && (
-  <div className="mb-2 rounded-lg border p-2 text-sm">
-    <p className="font-medium">Waiting to join</p>
-    {lobby.map((u) => (
-      <div key={u.userId} className="mt-1 flex items-center gap-2">
-        <span>{u.name}</span>
-        <button onClick={()=>decide(u.userId,true)}className="bg-indigo-100 hover:underline" >Admit</button>
-        <button onClick={()=>decide(u.userId,false)}>Deny</button>
-      </div>
-    ))}
-  </div>
-)}
-                <div className="ml-3 text-gray-500">
-  Online now:
-  {online.length === 0 ? ' -' : online.map((u) => (
-    <span key={u.socketId} className="ml-2">
-      {u.name} ({u.role})
-      {role === 'leader' && u.role !== 'leader' && (
-        <button
-          className="ml-1 text-red-600 hover:underline"
-          onClick={() => kick(u.userId, u.name)}>
-          Kick
-        </button>
-      )}
-    </span>
-  ))}
-</div>
-            </div>
-            {error && <p className="mb-2 text-sm text-red-600" >{error}</p> }
-            <div className="h-[70vh] overflow-hidden rounded-xl border bg-white">
-                <Excalidraw
-                initialData={initial}
-                excalidrawAPI={handleApi}
-                viewModeEnabled={role==='viewer'}
-                isCollaborating
-                onChange={(elements,_appState,files)=>handleChange(elements,files)}
-                onPointerUpdate={handlePointer}
-                />
-            </div>
+  <div>
+    <div className="relative mb-2 flex items-center justify-between gap-2 text-sm">
+      <span className={status==='live'?'text-green-400':'text-amber-600'}>
+        {status==='live'?'● Live':status==='connecting'?'● Reconnecting...':status==='waiting'?'● Waiting for the leader to let you in...':'● Offline'}
+        <span className="ml-2 text-gray-200">{canEdit?'You can edit':'View only'}</span>
+      </span>
+      <button className="rounded-lg border bg-white px-3 py-1 hover:bg-gray-100" onClick={()=>setPeopleOpen((o)=>!o)}>
+        People ({online.length})
+      </button>
+      {peopleOpen && (
+        <div className="absolute right-0 top-9 z-30 w-72 rounded-xl border bg-white p-2 shadow-lg">
+          {members.map((m)=>{
+            const isOn=online.some((o)=>o.userId===m.userId);
+            return (
+              <div key={m.userId} className="flex items-center gap-2 px-2 py-1.5">
+                <span className={`h-2 w-2 rounded-full ${isOn?'bg-green-500':'bg-gray-300'}`} />
+                <span className="min-w-0 flex-1 truncate">{m.name}</span>
+                {role==='leader' && m.role!=='leader' ? (
+                  <select className="rounded border text-xs" value={m.role} onChange={(e)=>onChangeRole?.(m.userId,e.target.value as Role)}>
+                    <option value="editor">editor</option>
+                    <option value="viewer">viewer</option>
+                  </select>
+                ) : <span className="text-xs text-gray-500">{m.role}</span>}
+                {role==='leader' && isOn && m.role!=='leader' && (
+                  <button className="text-xs text-red-600 hover:underline" onClick={()=>kick(m.userId,m.name)}>Kick</button>
+                )}
+              </div>
+            );
+          })}
         </div>
-    )
+      )}
+    </div>
+
+    {role==='leader' && lobby.length>0 && (
+      <div className="fixed bottom-4 right-4 z-50 w-72 space-y-2">
+        {lobby.map((u)=>(
+          <div key={u.userId} className="rounded-xl border border-amber-300 bg-amber-50 p-3 shadow-lg">
+            <p className="text-sm font-medium">{u.name} wants to join</p>
+            <div className="mt-2 flex gap-2">
+              <button className="rounded-lg bg-indigo-600 px-3 py-1 text-sm text-white" onClick={()=>decide(u.userId,true)}>Admit</button>
+              <button className="rounded-lg border bg-white px-3 py-1 text-sm" onClick={()=>decide(u.userId,false)}>Deny</button>
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+
+    {error && <p className="mb-2 text-sm text-red-600">{error}</p>}
+    {fromIdea && <p className="mb-2 rounded-lg bg-indigo-50 px-3 py-1.5 text-sm text-indigo-700">{fromIdea}</p>}
+    <div className="h-[calc(100vh-8rem)] overflow-hidden rounded-xl border bg-white">
+      <Excalidraw
+        initialData={initial}
+        theme="dark"
+        excalidrawAPI={handleApi}
+        viewModeEnabled={role==='viewer'}
+        isCollaborating
+        onChange={(elements,appState,files)=>handleChange(elements,files,appState)}
+        onPointerUpdate={handlePointer}
+      />
+    </div>
+  </div>
+)
 }

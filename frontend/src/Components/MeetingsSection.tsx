@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { api } from "../lib/api";
 import { defaultstartupinput,formatWhen, statusStyle,type meetingstatus } from "../lib/meetingTime";
 import { type Role } from "../store/projectstore";
+import Meetblocks from "./Meetblocks";
 
 interface MeetingSummary{
     id:string;
@@ -85,18 +86,18 @@ export default function MeetingsSection({projectId,isLeader,}:{projectId:string;
     const input='w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-indigo-500';
     const titleOf=(id:string |null)=>meetings.find((m)=>m.id===id)?.title;
     return (
-        <section className="mt-10">
+        <section className="mt-10 flex items-center justify-center flex-col ">
             <h2 className="font-medium">Meetings</h2>
             {isLeader && (
-                <form onSubmit={onCreate} className="mt-3 space-y-3">
+                <form onSubmit={onCreate}  className="mt-3 w-9/10 border-1 gap-2 rounded-2xl bg-white/5 shadow-2xl backdrop-blur-2xl p-4 z-10  m-7 space-y-3">
                     <input type="text" className={input} value={form.title} placeholder="Meeting title" onChange={(e)=>setForm({...form, title:e.target.value})} />
                     <input type="text" className={input} value={form.topic} placeholder="Meeting's topic" onChange={(e)=>setForm({...form, topic:e.target.value})} />
                     <div className="grid gap-3 sm:grid-cols-2">
-                        <label htmlFor="" className="text-sm text-gray-600">
+                        <label htmlFor="" className="text-m text-gray-900">
                             Starts At
                             <input type="datetime-local" className={`${input} mt-1`} value={form.startsAt} placeholder="Meeting's topic" onChange={(e)=>setForm({...form, startsAt:e.target.value})} />
                         </label>
-                        <label htmlFor="" className="text-sm text-gray-600">
+                        <label htmlFor="" className="text-m text-gray-900">
                             Duration
                             <select name="" id="" className={`${input} mt-1`} value={form.duration} onChange={(e)=>setForm({...form, duration:e.target.value})} >
                                 {duration.map((d)=>(
@@ -129,28 +130,17 @@ export default function MeetingsSection({projectId,isLeader,}:{projectId:string;
                 ):meetings.length===0?(
                     <p>No meetings yet{isLeader ? 'Create the first meeting':''}</p>
                 ):(
-                    <ul className="mt-3 space-y-2">
+                    <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
                         {
                             meetings.map((m)=>(
-                                <li key={m.id}>
+                                
                                     <Link to={`/projects/${projectId}/meetings/${m.id}`}>
-                                    <div>
-                                        <p>{m.title}</p>
-                                        {m.topic && (<p>{m.topic}</p>)}
-                                        <p>{formatWhen(m.startsAt,m.duration)}
-                                            {m.startedFrom && titleOf(m.startedFrom)
-                                            ?`.continous from ${titleOf(m.startedFrom)}`:''}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <span>{m.status}</span>
-                                        <span>{m.myRole}</span>
-                                    </div>
+                                    <Meetblocks title={m.title} topic={m.topic} duration={m.duration} startsAt={m.startsAt} status={m.status} startedFrom={m.startedFrom}  />
                                     </Link>
-                                </li>
+                                
                             ))
                         }
-                    </ul>
+                    </div>
                 )
             }
         </section>

@@ -2,7 +2,7 @@ export type meetingstatus='upcoming'|'live'|'ended';
 
 export const statusStyle:Record<meetingstatus,string>={
     upcoming:'bg-amber-50 text-amber-500',
-    live:'bg-green=50 text-green-700',
+    live:'bg-green-50 text-green-700',
     ended:'bg-gray-100 text-gray-700'
 }
 export function formatduration(minutes:number){

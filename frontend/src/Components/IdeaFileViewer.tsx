@@ -129,7 +129,7 @@ function PageView({ canvas, box, canCrop, onBox }: { canvas: HTMLCanvasElement, 
         </div>
     )
 }
-export default function IdealFileViewer({ url, attachment, canCrop = false }: { url: string, attachment: Attachment, canCrop?: boolean }) {
+export default function IdealFileViewer({ url, attachment, canCrop = false,source }: { url: string, attachment: Attachment, canCrop?: boolean,source:{ideaId:string, title:string, author:string} }) {
     const [pages, setPages] = useState<HTMLCanvasElement[]>([]);
     const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
     const [sel, setSel] = useState<Selection | null>(null);
@@ -215,7 +215,8 @@ export default function IdealFileViewer({ url, attachment, canCrop = false }: { 
     })
     const useOnCanvas = () => run(async () => {
         const blob = await cropBlob(CANVAS_MAX_SIDE);
-        const detail = { blob, handled: false, done: (text: string) => setMsg(text) };
+        console.log('1 viewer',source);
+        const detail = { blob, handled: false, done: (text: string) => setMsg(text),source};
         setMsg('Adding to the canvas...');
         window.dispatchEvent(new CustomEvent('thinkloom:add-image', { detail }));
         if (!detail.handled) {
@@ -226,20 +227,20 @@ export default function IdealFileViewer({ url, attachment, canCrop = false }: { 
     return (
         <div>
             <div className='mb-2 flex items-center justify-between gap-3 text-sm' >
-                <span className='truncate text-gray-700' >
+                <span className='truncate text-gray-200' >
                     {attachment.name}. {formatSize(attachment.size)}
                 </span>
-                <a href={`${url}?download=1`} className='shrink-0 text-indigo-700 hover:underline' >Download Original</a>
+                <a href={`${url}?download=1`} className='shrink-0 text-indigo-300 hover:underline hover:text-white ' >Download Original</a>
             </div>
             {canCrop && (
                 <div className='mb-2 flex items-center flex-wrap gap-2' >
-                    <span className='text-xs text-gray-500' >
+                    <span className='text-xs text-gray-200' >
                         Drag over the part you want
                         {attachment.kind === 'image' ? 'oruse the whole image' : '.'}
                     </span>
                     <button onClick={useOnCanvas} className='rounded-lg bg-indigo-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700' >use on canvas</button>
-                    <button onClick={copy} className={btn} >Copy</button>
-                    <button onClick={download} className={btn} >Download crop</button>
+                    <button onClick={copy} className={`${btn} border-white text-white hover:text-gray-950`} >Copy</button>
+                    <button onClick={download} className={`${btn} border-white text-white hover:text-gray-950`} >Download crop</button>
                     {sel && <button className={btn} onClick={()=>setSel(null)} >Clear</button>}
                 </div>
             )}

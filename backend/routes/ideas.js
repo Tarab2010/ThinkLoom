@@ -106,6 +106,7 @@ router.post('/',member, acceptUpload,async(req,res)=>{
     let idea;
     try{
         idea=await Idea.create({project:req.meeting.project,meeting:req.meeting._id,author:req.userId,title,description,attachment});    
+        await idea.populate('author','name');
     }
     catch(err){
         await removeFile(attachment.key);

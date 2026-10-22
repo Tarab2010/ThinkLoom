@@ -11,7 +11,7 @@ export default function Dashboard(){
     const [form,setForm]=useState({name:'',description:'',category:''});
     const [error,setError]=useState('');
     const [creating,setCreating]=useState(false);
-    
+    const user=useAuthStore((s)=>s.user);
     useEffect(()=>{
         fetchProjects();
     },[fetchProjects])
@@ -30,12 +30,16 @@ export default function Dashboard(){
             setCreating(false);
         }
     }
+    const {logout}=useAuthStore();
     const input='w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-indigo-500';
     return (
-        <div className='relative mx-auto max-w-3xl p-8'>
-            <Navbar/>
-            <h1>ThinkLoom</h1>
-            <form onSubmit={onCreate} className='mt-8 space-y-3 rounded-2xl bg-white p-6 shadow'>
+        <div className='relative min-h-screen overflow-hidden mx-auto bg-gray-200 max-w-full p-8'>
+            <div className='flex ' >
+            <h1 className='font-bold text-xl' >ThinkLoom</h1>
+            <div className="bg-gray-700  absolute right-20 top-1 h-auto flex p-1 w-1/50 item-center justify-center rounded-full font-medium text-white">{(user?user.name:'guest')[0]}</div>
+            <button onClick={logout} className=" absolute rounded-2xl bg-black text-amber-100 p-2 top-1 right-0 hover:underline hover:bg-gray-400">Log Out</button>
+            </div>
+            <form onSubmit={onCreate} className='mt-8 space-y-3 shadow-2xl rounded-2xl bg-neutral border-1 border-amber-100 p-6 hover:border-indigo-400'>
                 <h2 className='font-medium'>New Project</h2>
                 <input type="text" className={input} placeholder='project name' value={form.name} onChange={(e)=>setForm({...form, name:e.target.value})} />
                 <input type="text" className={input} placeholder='project description' value={form.description} onChange={(e)=>setForm({...form, description:e.target.value})} />

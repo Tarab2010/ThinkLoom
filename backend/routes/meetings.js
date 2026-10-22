@@ -64,7 +64,7 @@ router.post('/',requireRole('leader'),async(req,res)=>{
         const files=await CanvasFile.find({meeting:startedFrom});
         if(files.length){
             await CanvasFile.insertMany(files.map((f)=>({
-                meeting:meetingId,fileId:f.fileId,key:f.key,mime:f.mime,size:f.size,user:f.user
+                meeting:meeting._id,fileId:f.fileId,key:f.key,mime:f.mime,size:f.size,user:f.user
             })));
         }
     }
@@ -95,11 +95,7 @@ router.get('/',requireRole(),async(req,res)=>{
 router.get('/:meetingId',requiremeetingrole(),(req,res)=>{
     res.json(meetingjson(req.meeting,req.meetingrole));
 })
-router.get('/:meetingId/canvas',requiremeetingrole(),async(req,res)=>{
-    await flushMeetingCanvas(req.meeting._id);
-    const cv=await CanvasVersion.findOne({meeting:req.meeting._id});
-    res.json({elements:cv?cv.toObject().elements:[]});
-})
+
 router.get('/:meetingId/members',requiremeetingrole(),async(req,res)=>{
     const isLeader=req.meetingrole==='leader';
     const memberships=await Membership.find({project:req.params.projectId}).populate('user','name email').sort({createdAt:-1});
@@ -120,11 +116,12 @@ router.get('/:meetingId/members',requiremeetingrole(),async(req,res)=>{
 });
 router.post('/:meetingId/end',requiremeetingrole('leader'),async(req,res)=>{
     await flushMeetingCanvas(req.meeting._id);
-    req.meeting.endedAt=Date.now();
+    req.meeting.endedAt=new Date();
     await req.meeting.save();
     const io=req.app.get('io');
     const id=String(req.meeting._id);
     io?.to(`meeting:${id}`).emit('meeting:ended');
+    io?.to(`lobby:${id}`).emit('meeting:ended');
     for(const s of (await io?.in(`meeting:${id}`).fetchSockets())??[]){
         s.leave(`meeting:${id}`);
         s.leave(`ideas:${id}`);

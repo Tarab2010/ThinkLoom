@@ -5,6 +5,12 @@ export interface imageLike{
     type:string,
     fileId?:string | null,
     isDeleted?:boolean,
+    customData?:Record<string,any>,
+}
+export interface IdeaSource{
+    ideaId:string,
+    title:string,
+    author:string
 }
 type FileId=BinaryFileData['id'];
 type DataURL=BinaryFileData['dataURL'];
@@ -108,7 +114,8 @@ export function createImageSync(base:string,onError?:(message:string)=>void){
                 }
             }
         },
-        async add(blob:Blob){
+        async add(blob:Blob,source?:IdeaSource){
+            console.log('1 source',source)
             if(!api){
                 throw new Error('The canvas is not ready yet');
             }
@@ -117,16 +124,28 @@ export function createImageSync(base:string,onError?:(message:string)=>void){
             const {width,height}=bitmap;
             bitmap.close();
             const fileId=newFileId() as FileId;
-            api.addFiles([{id:fileId,dataURL:dataURL as DataURL,mimeType:'image/png',created:Date.now()}]);
+            api.addFiles([{id:fileId,dataURL:dataURL as DataURL,mimeType: (blob.type || 'image/png') as Mime,created:Date.now()}]);
             const state=api.getAppState();
             const zoom=state.zoom.value;
             const w=Math.min(width,(state.width/zoom)*0.5);
             const h=(height*w)/width;
             const x=-state.scrollX+state.width/(2*zoom)-w/2;
             const y=-state.scrollY+state.height/(2*zoom)-h/2;
-            const [element]=convertToExcalidrawElements([{type:'image',fileId,x,y,width:w,height:h,status:'saved'}]);
+            const skeletons:any[]=[{type:'image',fileId,x,y,width:w,height:h,status:'saved'}]
+            if(source){
+                skeletons.push({
+                    type:'text',
+                    text:`From ${source.title} (by ${source.author})`,
+                    x,
+                    y:y+h+8,
+                    fontSize:16
+                })
+            }
+            const made=convertToExcalidrawElements(skeletons)
+            const rest=made.slice(1);
+            const element=source?({...made[0],customData:{ideaId:source.ideaId,title:source.title,author:source.author}} as typeof made[0]):made[0];
             api.updateScene({
-                elements:[...api.getSceneElementsIncludingDeleted(),element],
+                elements:[...api.getSceneElementsIncludingDeleted(),element,...rest],
                 appState:{selectedElementIds:{[element.id]:true}},
                 captureUpdate:CaptureUpdateAction.IMMEDIATELY,
             });

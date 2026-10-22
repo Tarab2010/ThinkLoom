@@ -79,35 +79,41 @@ export default function ProjectPage(){
     }
     const isleader= project.role==='leader';
     return (
-        <div className="mx-full max-w-3xl p-8">
-            <Link className="text-smtext-indigo-600 hover:underline" to='/'>Dashboard</Link>
-            <div className="mt-3 flex item-center justify-between">
+        <div className="mx-full bg-gray-300 max-w-full p-8">
+            <div className="flex relative flex-col items-center justify-center gap-5" >
+            <Link className="text-m font-semibold absolute top-2 left-0 text-indigo-600 hover:underline" to='/'> { `<-Dashboard`}</Link>
+            
+            <div className="mt-3 flex item-center justify-center">
                 <h1 className="text-2xl font-semibold">{project.name}</h1>
-                <span className="rounded-full bg-indigo-50 text-xs px-3 py-1 font-medium text-indigo-700">You are a {project.role} in this meeting</span>
             </div>
-            <p className="mt-1text-gray-500">{project.category}
+            <p className="mt-1 text-gray-500">{project.category}
                 {project.description}
             </p>
+            </div>
             {
                 isleader && project.invitecode &&(
-                    <div className="mt-6 rounded-xl border bg-white p-4">
+                    <div className="w-full flex items-center  justify-center" >
+                    <div className="mt-6 w-1/2  rounded-xl shadow-2xl  border bg-white/20 p-4">
                         <p className="text-sm font-medium">Invite Link</p>
                         <p className="mt-1 break-all text-sm text-gray-600">{window.location.origin}/join/{project.invitecode}</p>
                         <button onClick={CopyInvite} className="mt-3 border rounded-lg px-3 py-1.5 text-sm hover:bg-gray-100">{copied?'Copied':'copy link'}</button>
                     </div>
+                    </div>
                 )
             }
             {error &&(<p className="mt-2 text-xs text-gray-500">{error}</p>)}
+            <div className="flex " >
+            <div className="w-1/4 h-auto " >
             <h2 className="mt-8 font-medium">Members</h2>
-            <ul className="mt-3 divide-y rounded-xl border bg-white">
+            <ul className="mt-3 divide-y rounded-xl border shadow-xl bg-gray/10">
                 {members.map((m)=>(
                     <li key={m.userId} className="flex item-center justify-between p-3">
-                        <div>
+                        <div className=" flex flex-col items-center justify-center" >
                             <p className="font-medium">{m.name}</p>
-                            {m.email && (<p className="text-sm text-gray-500">{m.email}</p>)}
+                            {m.email && (<p className="text-sm m-2 text-gray-500">{m.email}</p>)}
                         </div>
                         {isleader && m.role!=='leader'?(
-                            <select value={m.role} className="rounded-lg border text-sm px-2 py-1" onChange={(e)=>changeRole(m.userId,e.target.value as Role)}>
+                            <select value={m.role} className="rounded-lg h-1/8 border text-sm px-2 py-1" onChange={(e)=>changeRole(m.userId,e.target.value as Role)}>
                                 <option value="editor">editor</option>
                                 <option value="viewer">viewer</option>
                             </select>
@@ -117,8 +123,9 @@ export default function ProjectPage(){
                     </li>
                 ))}
             </ul>
+            </div>
             <MeetingsSection projectId={project.id} isLeader={isleader}/>
-            <p className="mt-8 text-sm text-gray-500">Meetings and canvas will appear here next</p>
+            </div>
         </div>
     )
 }
