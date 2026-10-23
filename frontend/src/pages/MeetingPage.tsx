@@ -202,9 +202,9 @@ export default function MeetingPage() {
                             {ending ? 'Ending...' : 'End meeting'}
                         </button>
                     )}
-                    {meeting.status==='live' && projectId && meetingId &&(
-                         <CallPannel key={`${meetingId}-${ideasKey}`} projectId={projectId} meetingId={meetingId} isLeader={isLeader} startcall={true} />
-                    ) }
+                    {meeting.status === 'live' && projectId && meetingId && (
+                        <CallPannel  key={`${meetingId}-${ideasKey}`} projectId={projectId} meetingId={meetingId} isLeader={isLeader} startcall={true} />
+                    )}
                 </div>
             </header>
 
@@ -221,26 +221,26 @@ export default function MeetingPage() {
 
                 <div className="min-w-0 flex-1 overflow-auto p-3">
                     <div>
-                        {meeting.status==='live' && !preview &&(
-                            <button onClick={()=>setSidebar((prev)=>!prev)} title={sidebar?'hide ideas':'show ideas'} className="absolute right-0 top-1/2 z-20 -translate-0.5 rounded-l-lg border border-r-0 bg-gray-800 px-1.5 py-4  text-gray-100 hover:bg-gray-200 hover:text-black " >
-                                {sidebar? '->':'<-'}
+                        {meeting.status === 'live' && !preview && (
+                            <button onClick={() => setSidebar((prev) => !prev)} title={sidebar ? 'hide ideas' : 'show ideas'} className="absolute right-0 top-1/2 z-20 -translate-0.5 rounded-l-lg border border-r-0 bg-gray-800 px-1.5 py-4  text-gray-100 hover:bg-gray-200 hover:text-black " >
+                                {sidebar ? '->' : '<-'}
                             </button>
                         )}
-                    {projectId && meetingId && (
-                        meeting.status === 'ended'
-                            ? <ArchivedCanvas key={meetingId} projectId={projectId} meetingId={meetingId} />
-                            : <CanvasBoard
-                                key={meetingId}
-                                projectId={projectId}
-                                meetingId={meetingId}
-                                members={members}
-                                onChangeRole={changeRole}
-                                onRoleChange={(r) => setMeeting((m) => (m ? { ...m, myRole: r } : m))}
-                                onEnded={() => navigate(`/projects/${projectId}`)}
-                                onAdmitted={() => setIdeasKey((k) => k + 1)}
-                                Onremoved={()=>navigate(`/projects/${projectId}`)}
-                            />
-                    )}
+                        {projectId && meetingId && (
+                            meeting.status === 'ended'
+                                ? <ArchivedCanvas key={meetingId} projectId={projectId} meetingId={meetingId} />
+                                : <CanvasBoard
+                                    key={meetingId}
+                                    projectId={projectId}
+                                    meetingId={meetingId}
+                                    members={members}
+                                    onChangeRole={changeRole}
+                                    onRoleChange={(r) => setMeeting((m) => (m ? { ...m, myRole: r } : m))}
+                                    onEnded={() => navigate(`/projects/${projectId}`)}
+                                    onAdmitted={() => setIdeasKey((k) => k + 1)}
+                                    Onremoved={() => navigate(`/projects/${projectId}`)}
+                                />
+                        )}
                     </div>
                 </div>
                 {projectId && meetingId && meeting.status === 'live' && (

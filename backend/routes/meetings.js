@@ -6,6 +6,7 @@ import requireauth from '../middleware/auth.js';
 import Meetings from '../models/Meetings.js';
 import Membership from '../models/Membership.js';
 import CanvasFile from '../models/CanvasFile.js';
+import { projectRoom } from '../sockets/meetingSocket.js';
 import { meetingStatus } from '../lib/meetingStatus.js';
 import Meetingrole from '../models/Meetingroles.js';
 import CanvasVersion from '../models/CanvasVersion.js';
@@ -73,6 +74,7 @@ router.post('/',requireRole('leader'),async(req,res)=>{
         elements:startingElements,
         updatedBy:req.userId
     })
+    req.app.get('io').to(projectRoom(req.params.projectId)).emit('meetings:changed');
     res.status(201).json(meetingjson(meeting,'leader'));
 })
 router.get('/',requireRole(),async(req,res)=>{
@@ -176,7 +178,7 @@ router.patch('/:meetingId/members/:userId',requiremeetingrole('leader'),async(re
         {role},
         {upsert:true}
     );
-    await refreshMeetingRoles(req.app.get('io'),String(req.meeting._id));
+    await refreshMeetingRoles(req.app.get('io'),String(req.meeting._id),req.params.userId);
     res.json({userId:req.params.userId,role});
 })
 export default router;

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, } from "react";
 import {LiveKitRoom, GridLayout, ParticipantTile, RoomAudioRenderer,ControlBar, useTracks, useParticipants,} from "@livekit/components-react";
 import { Track } from "livekit-client";
 import "@livekit/components-styles";
@@ -52,6 +52,29 @@ export default function CallPannel({projectId, meetingId, isLeader, startcall }:
     const [manage,setManage]=useState(false);
     const [connection, setConnection] = useState<{ token: string; url: string } | null>(null);
     const [busy, setBusy] = useState(false);
+    const [position,setPosition]=useState({x:100,y:100});
+    const dragging=useRef(false);
+    const offset=useRef({x:0,y:0});
+    function handlePointerDown(e:React.PointerEvent<HTMLDivElement>){
+        dragging.current=true;
+        offset.current={
+            x:e.clientX-position.x,
+            y:e.clientY-position.y
+        }
+        e.currentTarget.setPointerCapture(e.pointerId);
+    }
+    function handlePointerMove(e:React.PointerEvent<HTMLDivElement>){
+        if(!dragging.current){
+            return;
+        }
+        setPosition({
+            x:e.clientX-offset.current.x,
+            y:e.clientY-offset.current.y
+        })
+    }
+    function handlepointerup(){
+        dragging.current=false;
+    }
     useEffect(()=>{
         if(startcall){
             void join()
@@ -80,8 +103,8 @@ export default function CallPannel({projectId, meetingId, isLeader, startcall }:
         </div>)
     }
     return(
-        <div data-lk-theme='default' className="fixed bottom-4 left-4 z-40 w-72 overflow-hidden rounded-xl border bg-gray-900 shadow-xl" >
-            <LiveKitRoom token={connection.token} serverUrl={connection.url} connect audio video onDisconnected={()=>setConnection(null)} >
+        <div onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlepointerup} onPointerCancel={handlepointerup} data-lk-theme='default' className="fixed bottom-4 left-4 z-40 w-72 overflow-hidden rounded-xl border bg-gray-900 shadow-xl" >
+            <LiveKitRoom token={connection.token} serverUrl={connection.url} connect audio={false} video={false} onDisconnected={()=>setConnection(null)} >
                 <div className="h-48" ><Screen/></div>
                 <RoomAudioRenderer/>
                 <ControlBar  variation="minimal" controls={{chat:false, screenShare:false}} />

@@ -59,6 +59,16 @@ router.get('/', requiremeetingrole(), async (req, res) => {
             if (!ok){ 
                 return res.status(403).json({ error: 'Leader has not admitted you yet' });
             }
+            try{
+                const people=await admin().listParticipants(roomof(m));
+                const leaderId=String(m.createdBy);
+                if(!people.some((p)=>p.identity===leaderId)){
+                    return res.status(403).json({error:'leader has not started the call yet'})
+                }
+            }
+            catch{
+                return res.status(403).json({error:'leader has not started the call yet'})
+            }
         }
         const user = await User.findById(req.userId).select('name');
         const endsAt = m.endedAt? m.endedAt.getTime():(m.startsAt??m.createdAt).getTime()+(m.duration??60)*60000;

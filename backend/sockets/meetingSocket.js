@@ -9,7 +9,6 @@ import { meetingStatus } from '../lib/meetingStatus.js';
 import MeetingAdmission from '../models/MeetingAdmission.js';
 import { isNewer } from '../lib/mergeElements.js';
 import { effectiverole } from '../middleware/meetingrole.js';
-import { createRequire } from 'module';
 import Meetings from '../models/Meetings.js';
 
 function readCookies(header = '') {
@@ -42,6 +41,7 @@ const leaderRoom = (id) => `leader:${id}`;
 const COOKIE_NAMES = ['token'];
 const roomName = (meetingId) => `meeting:${meetingId}`;
 export const ideasRoom = (meetingId) => `ideas:${meetingId}`;
+export const projectRoom = (projectId) => `projects:${projectId}`;
 const rooms = new Map();
 async function broadcastLobby(io, meetingId) {
     const sockets = await io.in(lobbyRoom(meetingId)).fetchSockets();
@@ -168,13 +168,16 @@ async function leaveMeeting(io, socket) {
     socket.data.meetingId = null;
     await afterLeave(io, meetingId);
 }
-export async function refreshMeetingRoles(io, meetingId) {
+export async function refreshMeetingRoles(io, meetingId,memberId=null) {
     if (!io) {
         return;
     }
     try {
         const sockets = await io.in(roomName(meetingId)).fetchSockets();
         for (const s of sockets) {
+            if(!memberId && s.data.user.id!==String(memberId)){
+                continue;
+            }
             const membership = await Membership.findOne({
                 project: s.data.projectId,
                 user: s.data.user.id
@@ -413,7 +416,24 @@ console.log('LOBBY SOCKETS', inLobby.map(s => s.data.user.id), 'deciding for', u
                 }
             }
             catch (err) {
-                console.error('ideasLsubscribe failed', err.message);
+                console.error('ideas subscribe failed', err.message);
+            }
+            reply();
+        })
+        socket.on('project:subscribe',async(payload,ack)=>{
+            const reply = typeof ack === 'function' ? ack : () => { };
+            try{
+                const {projectId}=payload ||{};
+                if(!mongoose.isValidObjectId(projectId)){
+                    return reply();
+                }
+                const membership=await Membership.findOne({project:projectId, user:socket.data.user.id});
+                if(membership){
+                    socket.join(projectRoom(projectId));
+                }
+            }
+            catch(err){
+                console.error('project:subscribe failed',err.message)
             }
             reply();
         })
