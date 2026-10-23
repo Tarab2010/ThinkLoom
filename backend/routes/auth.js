@@ -16,6 +16,30 @@ function SetSession(res,userId){
     res.cookie('token',token,cookieOptions);
 }
 const publicuser=(u)=>({id:u._id, name:u.name, email:u.email});
+router.post('/signup',async(req,res)=>{
+    const name=String(req.body.name||'').trim();
+    const email=String(req.body.email||'').trim().toLocaleLowerCase();
+    const password=String(req.body.password||'');
+    if(!name){
+        return res.status(404).json({error:'a name is required'});
+    }
+    if(!email){
+        return res.status(404).json({error:'an email is required'});
+    }
+    if(!password){
+        return res.status(404).json({error:'password is not set'})
+    }
+    if(password.length<8){
+        return res.status(404).json({error:'password needs to be atleast 8 characters long'})
+    }
+    if(await User.findOne({email})){
+         return res.status(404).json({error:'this email is already registered'});
+    }
+    const passwordHash=await bcrypt.hash(password,10);
+    const user=await User.create({name,email,passwordHash});
+    SetSession(res, user.id);
+    res.status(201).json(publicuser(user));
+})
 router.post('/login', async(req,res)=>{
     const {email,password}=req.body;
     const user=await User.findOne({email: (email||'').toLowerCase()});

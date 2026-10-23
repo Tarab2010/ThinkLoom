@@ -24,7 +24,6 @@ export default function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
             else{
                 await login(form.email,form.password);
             }
-            navigate('/');
         }
         catch(err){
             setError(err instanceof Error ? err.message:"Something went wrong")
@@ -45,7 +44,7 @@ export default function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                 {error && (<p className='text-sm text-red-600'>{error}</p>)}
                 <button className='w-full rounded-lg bg-indigo-600 py-2 font-medium text-white hover:bg-indigo-700 disabled:opacity-60' disabled={submitting}>{submitting?"Please Wait...":issignup?"Sign Up":"Login"}</button>
                 <p className='text-sm text-gray-600 text-center'>{issignup?"Alread have an account":"Logn in"}
-                    <Link className='text-indigo-600 hover:underline' to={issignup?'/login':'/signup'}>{issignup?"Login":"Sign Up"}</Link>
+                    <Link className='text-indigo-600 hover:underline' state={{from}} to={issignup?'/login':'/signup'}>{issignup?"Login":"Sign Up"}</Link>
                 </p>
             </form>
         </div>

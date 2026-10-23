@@ -25,9 +25,9 @@ function App() {
           
           <Route path='/' element={<Dashboard/>} />
           <Route path='/projects/:projectId' element={<ProjectPage/>} />
-          <Route path='/join/:code' element={<JoinPage/>} />
           <Route path='/projects/:projectId/meetings/:meetingId' element={<MeetingPage/>}/>
         </Route>
+        <Route path='/join/:code' element={<JoinPage/>} />
       </Routes>
     </BrowserRouter>
   )
