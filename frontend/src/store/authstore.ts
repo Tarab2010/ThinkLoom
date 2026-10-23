@@ -7,7 +7,7 @@ export interface User{
 }
 interface AuthState{
     user:User|null;
-    loading:Boolean;
+    loading:boolean;
     fetchMe:()=>Promise<void>;
     login:(email:string, password:string)=>Promise<void>;
     signup:(name:string, email:string, password:string)=>Promise<void>;

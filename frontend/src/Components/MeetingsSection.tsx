@@ -2,9 +2,11 @@ import { useEffect,useState, type ComponentProps } from "react";
 type FormSubmitEvent=Parameters<NonNullable<ComponentProps<'form'>['onSubmit']>>[0];
 import { Link } from "react-router-dom";
 import { api } from "../lib/api";
-import { defaultstartupinput,formatWhen, statusStyle,type meetingstatus } from "../lib/meetingTime";
+import { createSocket } from "../lib/socket";
+import { defaultstartupinput,type meetingstatus } from "../lib/meetingTime";
 import { type Role } from "../store/projectstore";
 import Meetblocks from "./Meetblocks";
+import { connect } from "socket.io-client";
 
 interface MeetingSummary{
     id:string;
@@ -32,8 +34,22 @@ export default function MeetingsSection({projectId,isLeader,}:{projectId:string;
         startedFrom:'',
     });
     const[loading,setLoading]=useState(true);
+    const [countmeeting,setCountmeeting]=useState(0);
     const [error,setError]=useState('');
     const [creating,setCreating]=useState(false);
+    useEffect(()=>{
+        if(!projectId){
+            return;
+        }
+        const socket=createSocket();
+        const subscribe=()=>socket.emit('project:subscribe',{projectId});
+        socket.on('connect',subscribe);
+        socket.on('meetings:changed',()=>setCountmeeting((prev)=>prev+1));
+        socket.connect();
+        return()=>{
+            socket.disconnect();
+        }
+    },[projectId])
     useEffect(()=>{
         let cancelled=false;
         (async()=>{
@@ -57,7 +73,7 @@ export default function MeetingsSection({projectId,isLeader,}:{projectId:string;
         return ()=>{
             cancelled=true;
         }
-    },[projectId]);
+    },[projectId,countmeeting]);
     async function CreateMeeting(e:FormSubmitEvent){
         e.preventDefault();
         setError('');
@@ -94,11 +110,11 @@ export default function MeetingsSection({projectId,isLeader,}:{projectId:string;
                     <div className="grid gap-3 sm:grid-cols-2">
                         <label htmlFor="" className="text-m text-gray-900">
                             Starts At
-                            <input type="datetime-local" className={`${input} mt-1`} value={form.startsAt} placeholder="Meeting's topic" onChange={(e)=>setForm({...form, startsAt:e.target.value})} />
+                            <input type="datetime-local" className={`${input} mt-1`} value={form.startsAt} placeholder="Meeting's topic" onChange={(e)=>{setForm({...form, startsAt:e.target.value});}} />
                         </label>
                         <label htmlFor="" className="text-m text-gray-900">
                             Duration
-                            <select name="" id="" className={`${input} mt-1`} value={form.duration} onChange={(e)=>setForm({...form, duration:e.target.value})} >
+                            <select name="" id="" className={`${input} mt-1`} value={form.duration} onChange={(e)=>{setForm({...form, duration:e.target.value});e.target.blur();}} >
                                 {duration.map((d)=>(
                                     <option value={d} key={d}>
                                         {d>=60 ? `${d/60} h${d%60 ?` ${d%60 }min `:''}`:`${d} min`}
@@ -133,7 +149,7 @@ export default function MeetingsSection({projectId,isLeader,}:{projectId:string;
                         {
                             meetings.map((m)=>(
                                 
-                                    <Link to={`/projects/${projectId}/meetings/${m.id}`}>
+                                    <Link key={m.id} to={`/projects/${projectId}/meetings/${m.id}`}>
                                     <Meetblocks title={m.title} topic={m.topic} duration={m.duration} startsAt={m.startsAt} status={m.status} startedFrom={m.startedFrom}  />
                                     </Link>
                                 

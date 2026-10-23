@@ -38,9 +38,7 @@ export default function CanvasBoard({projectId,meetingId,onRoleChange,onEnded,on
     const onAdmittedRef=useRef(onAdmitted);
     useEffect(()=>{onEndedRef.current=onEnded;})
     useEffect(()=>{OnremovedRef.current=Onremoved;})
-    useEffect(()=>{
-        onRoleRef.current=onRoleChange;
-    })
+    useEffect(()=>{onRoleRef.current=onRoleChange;})
     useEffect(()=>{
         const images=createImageSync(`/projects/${projectId}/meetings/${meetingId}/canvas-files`,setError);
         imagesRef.current=images;

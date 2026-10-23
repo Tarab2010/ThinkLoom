@@ -119,6 +119,7 @@ export default function IdeasPanel({ projectId, meetingId, isLeader, previewId,s
       setForm({ title: '', description: '' });
       setFile(null);
       setFileKey((k) => k + 1);
+      setShowForm(false);
     }
     catch (err) {
       setError(err instanceof Error ? err.message : 'Could not submit the data');

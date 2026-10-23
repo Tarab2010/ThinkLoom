@@ -1,5 +1,3 @@
-
-import Navbar from '../Components/Navbar'
 import { useEffect,useState,type ComponentProps } from 'react'
 import{Link} from 'react-router-dom';
 import { useAuthStore } from '../store/authstore';
