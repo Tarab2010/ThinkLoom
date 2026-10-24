@@ -129,7 +129,7 @@ function PageView({ canvas, box, canCrop, onBox }: { canvas: HTMLCanvasElement, 
         </div>
     )
 }
-export default function IdealFileViewer({ url, attachment, canCrop = false,source }: { url: string, attachment: Attachment, canCrop?: boolean,source:{ideaId:string, title:string, author:string} }) {
+export default function IdealFileViewer({ url, attachment, canCrop = false,source,endpreview }: { url: string, attachment: Attachment, canCrop?: boolean,source:{ideaId:string, title:string, author:string;};endpreview?: () => void | Promise<void>}) {
     const [pages, setPages] = useState<HTMLCanvasElement[]>([]);
     const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
     const [sel, setSel] = useState<Selection | null>(null);
@@ -226,6 +226,7 @@ export default function IdealFileViewer({ url, attachment, canCrop = false,sourc
     const btn='rounded-lg border px-3 py-1.5 text-sm hover:bg-gray-100'
     return (
         <div>
+            <div className='sticky top-0 z-20 p-2 bg-gray-800  ' >  
             <div className='mb-2 flex items-center justify-between gap-3 text-sm' >
                 <span className='truncate text-gray-200' >
                     {attachment.name}. {setsize(attachment.size)}
@@ -233,7 +234,7 @@ export default function IdealFileViewer({ url, attachment, canCrop = false,sourc
                 <a href={`${url}?download=1`} className='shrink-0 text-indigo-300 hover:underline hover:text-white ' >Download Original</a>
             </div>
             {canCrop && (
-                <div className='mb-2 flex items-center flex-wrap gap-2' >
+                <div className=' mb-2 flex items-center  flex-wrap gap-2' >
                     <span className='text-xs text-gray-200' >
                         Drag over the part you want
                         {attachment.kind === 'image' ? 'oruse the whole image' : '.'}
@@ -241,13 +242,16 @@ export default function IdealFileViewer({ url, attachment, canCrop = false,sourc
                     <button onClick={useOnCanvas} className='rounded-lg bg-indigo-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700' >use on canvas</button>
                     <button onClick={copy} className={`${btn} border-white text-white hover:text-gray-950`} >Copy</button>
                     <button onClick={download} className={`${btn} border-white text-white hover:text-gray-950`} >Download crop</button>
+                    <button onClick={endpreview} className=
+                    'rounded-lg border border-indigo-600 px-3 py-1.5 text-sm text-indigo-700  hover:border-white hover:bg-indigo-600 hover:text-white' >End Preview</button>
                     {sel && <button className={btn} onClick={()=>setSel(null)} >Clear</button>}
                 </div>
             )}
+            </div>
             {msg && <p className='mb-2 text-sm text-gray-700' >{msg}</p>}
             {state === 'loading' && pages.length === 0 && <p className='text-sm text-gray-500' >Loading Preview...</p>}
             {state === 'error' && (<p className='text-sm text-red-500' >Could not preview this file</p>)}
-            <div className='max-h-[70vh] space-y-3 overflow-auto rounded-lg bg-gray-100 p-3' >
+            <div className='h-full space-y-3 overflow-auto rounded-lg bg-gray-100 p-3' >
                 {pages.map((canvas, i) => (
                     <div className='mx-auto max-w-3xl' key={i} >
                         <PageView

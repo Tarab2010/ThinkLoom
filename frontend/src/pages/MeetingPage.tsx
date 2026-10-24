@@ -213,9 +213,8 @@ export default function MeetingPage() {
 
             <div className="flex min-h-0 flex-1">
                 {preview && meeting.status === 'live' && (
-                    <div className="w-1/2 overflow-auto border-r transition duration-300 ease-in-out bg-gray-800 p-3">
-                        {isLeader && <button onClick={endPreview} className="rounded-lg border border-indigo-600 px-3 py-1.5 text-sm text-indigo-700  hover:border-white hover:bg-indigo-600 hover:text-white">End preview</button>}
-                        <IdealFileViewer key={preview.url} url={preview.url} attachment={preview.attachment} canCrop={isLeader} source={preview.source} />
+                    <div className="w-1/2 overflow-auto border-r p-0 transition duration-300 ease-in-out z-20 bg-gray-800 ">
+                        <IdealFileViewer endpreview={endPreview} key={preview.url} url={preview.url} attachment={preview.attachment} canCrop={isLeader} source={preview.source} />
                     </div>
                 )}
 

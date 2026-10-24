@@ -56,6 +56,9 @@ export default function CallPannel({projectId, meetingId, isLeader, startcall }:
     const dragging=useRef(false);
     const offset=useRef({x:0,y:0});
     function handlePointerDown(e:React.PointerEvent<HTMLDivElement>){
+        if((e.target as HTMLElement).closest('button a input select textarea .lk-pagination-control')){
+            return;
+        }
         dragging.current=true;
         offset.current={
             x:e.clientX-position.x,
@@ -103,13 +106,14 @@ export default function CallPannel({projectId, meetingId, isLeader, startcall }:
         </div>)
     }
     return(
-        <div onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlepointerup} onPointerCancel={handlepointerup} data-lk-theme='default' className="fixed bottom-4 left-4 z-40 w-72 overflow-hidden rounded-xl border bg-gray-900 shadow-xl" >
+        <div  data-lk-theme='default' className="fixed z-40 w-72 overflow-hidden rounded-xl border bg-gray-900 shadow-xl" style={{left:position.x, top:position.y}} >
+            <div className="cursor-grab touch-none select-none bg-gary-800 py-1 text-center active:cursor-grabbing " onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlepointerup} onPointerCancel={handlepointerup} data-lk-theme='default' >drag here</div>
             <LiveKitRoom token={connection.token} serverUrl={connection.url} connect audio={false} video={false} onDisconnected={()=>setConnection(null)} >
-                <div className="h-48" ><Screen/></div>
-                <RoomAudioRenderer/>
-                <ControlBar  variation="minimal" controls={{chat:false, screenShare:false}} />
+                <div className="h-48 relative"  ><Screen /></div>
+                <RoomAudioRenderer  />
+                <ControlBar  variation="minimal"onPointerDown={(e)=>e.stopPropagation()}  controls={{chat:false, screenShare:false}} />
                 { isLeader && (<>
-                <button onClick={()=>setManage((m)=>!m)} className="w-full bg-gray-800 py-1 text-xs text-white" >{manage ? 'Hide controls' : 'Manage participants'}</button>
+                <button onPointerDown={(e)=>e.stopPropagation()} onClick={()=>setManage((m)=>!m)} className="w-full bg-gray-800 py-1 text-xs text-white" >{manage ? 'Hide controls' : 'Manage participants'}</button>
                 {manage && <Controls base={base}/>}
                 </>)}
             </LiveKitRoom>
