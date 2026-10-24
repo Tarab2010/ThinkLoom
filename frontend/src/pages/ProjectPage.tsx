@@ -79,21 +79,21 @@ export default function ProjectPage() {
     }
     const isleader = project.role === 'leader';
     return (
-        <div className="mx-full h-screen bg-gray-300 max-w-full p-8">
-            <div className="flex relative flex-col items-center justify-center gap-5" >
-                <Link className="text-m font-semibold absolute top-2 left-0 text-indigo-600 hover:underline" to='/'> {`<-Dashboard`}</Link>
+        <div className="min-h-screen bg-gray-300 p-4 sm:p-8">
+            <div className="mx-auto max-w-6xl" >
+                <Link className="text-xl font-semibold  text-indigo-600 hover:underline" to='/'> {`<-Dashboard`}</Link>
 
-                <div className="mt-3 flex item-center justify-center">
+                <div className="mt-3 flex flex-col items-center gap-2 text-center">
                     <h1 className="text-2xl font-semibold">{project.name}</h1>
-                </div>
-                <p className="mt-1 text-gray-500">{project.category}
+                <p className="max-w-2xl break-word text-gray-500">{project.category}
                     {project.description}
                 </p>
+                </div>
             </div>
             {
                 isleader && project.invitecode && (
-                    <div className="w-full flex items-center  justify-center" >
-                        <div className="mt-6 w-1/2  rounded-xl shadow-2xl  border bg-white/20 p-4">
+                    <div className=" mt-6 flex  justify-center" >
+                        <div className="mt-6 w-full max-w-xl rounded-xl border bg-white/60 p-4 shadow-xl">
                             <p className="text-sm font-medium">Invite Link</p>
                             <p className="mt-1 break-all text-sm text-gray-600">{window.location.origin}/join/{project.invitecode}</p>
                             <button onClick={CopyInvite} className="mt-3 border rounded-lg px-3 py-1.5 text-sm hover:bg-gray-100">{copied ? 'Copied' : 'copy link'}</button>
@@ -102,23 +102,23 @@ export default function ProjectPage() {
                 )
             }
             {error && (<p className="mt-2 text-xs text-gray-500">{error}</p>)}
-            <div className="flex gap-2 items-center justify-center bg-gray-300 w-full " >
-                <div className="w-1/4 h-auto " >
+            <div className=" mt-6 flex flex-col gap-6 bg-gray-300 lg:flex-row lg:items-start " >
+                <div className="w-full lg:w-72 lg:shrink-0" >
                     <h2 className="mt-8 font-medium">Members</h2>
-                    <ul className="mt-3 divide-y rounded-xl border shadow-xl bg-gray/10">
+                    <ul className="mt-3 divide-y  rounded-xl border shadow-xl bg-gray/10">
                         {members.map((m) => (
                             <li key={m.userId} className="flex item-center justify-between p-3">
                                 <div className=" flex flex-col items-center justify-center" >
-                                    <p className="font-medium">{m.name}</p>
-                                    {m.email && (<p className="text-sm m-2 text-gray-500">{m.email}</p>)}
+                                    <p className="font-medium truncate">{m.name}</p>
+                                    {m.email && (<p className="truncate text-sm text-gray-500">{m.email}</p>)}
                                 </div>
                                 {isleader && m.role !== 'leader' ? (
-                                    <select value={m.role} className="rounded-lg h-1/8 border text-sm px-2 py-1" onChange={(e) => changeRole(m.userId, e.target.value as Role)}>
+                                    <select value={m.role} className="shrink-0 rounded-lg border px-2 py-1 text-sm" onChange={(e) => changeRole(m.userId, e.target.value as Role)}>
                                         <option value="editor">editor</option>
                                         <option value="viewer">viewer</option>
                                     </select>
                                 ) : (
-                                    <span className="text-sm text-gray-600">{m.role}</span>
+                                    <span className="shrink-0 text-sm font-bold text-gray-900">{m.role}</span>
                                 )}
                             </li>
                         ))}

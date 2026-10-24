@@ -161,7 +161,7 @@ export default function MeetingPage() {
     }
     const fromTitle = other.find((m) => m.id === fromId)?.title;
     return (
-        <div className="flex h-screen flex-col bg-gray-600">
+        <div className="flex min-h-screen flex-col bg-gray-600 lg:h-screen ">
             <header className="flex flex-wrap items-center gap-3 bg-gray-700 px-4 py-2 border-b border-transparent rounded  ">
                 <Link to={`/projects/${projectId}`} className="text-sm text-gray-400 hover:underline hover:text-white">← Project</Link>
                 <div className="min-w-0">

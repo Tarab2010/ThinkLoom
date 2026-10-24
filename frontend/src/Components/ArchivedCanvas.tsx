@@ -37,6 +37,7 @@ export default function ArchivedCanvas({projectId,meetingId}:{projectId:string,m
                     initialData={initial}
                     excalidrawAPI={handleApi}
                     viewModeEnabled
+                    theme="dark"
                     onChange={(els, _s,files:BinaryFiles)=>{
                         imageRef.current?.sync(els as readonly imageLike[],files,false)
                     }}/>

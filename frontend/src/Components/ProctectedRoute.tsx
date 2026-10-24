@@ -6,5 +6,5 @@ export default function ProtectedRoute(){
     if(loading){
         return (<p className='p-8 text-gray-500'>Loading...</p> )
     }
-    return user? <Outlet/>:<Navigate to='/login' replace state={{from:location.pathname}}/>
+    return user? <Outlet />:<Navigate to='/login' replace state={{from:location.pathname}}/>
 }

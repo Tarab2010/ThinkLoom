@@ -1,4 +1,7 @@
 @import 'tailwindcss';
+html,body,#root{
+  height: 100%;
+}
 /* :root {
   --text: #6b6375;
   --text-h: #08060d;
