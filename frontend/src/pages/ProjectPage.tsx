@@ -79,7 +79,7 @@ export default function ProjectPage() {
     }
     const isleader = project.role === 'leader';
     return (
-        <div className="mx-full bg-gray-300 max-w-full p-8">
+        <div className="mx-full h-screen bg-gray-300 max-w-full p-8">
             <div className="flex relative flex-col items-center justify-center gap-5" >
                 <Link className="text-m font-semibold absolute top-2 left-0 text-indigo-600 hover:underline" to='/'> {`<-Dashboard`}</Link>
 
@@ -102,7 +102,7 @@ export default function ProjectPage() {
                 )
             }
             {error && (<p className="mt-2 text-xs text-gray-500">{error}</p>)}
-            <div className="flex gap-2 " >
+            <div className="flex gap-2 items-center justify-center bg-gray-300 w-full " >
                 <div className="w-1/4 h-auto " >
                     <h2 className="mt-8 font-medium">Members</h2>
                     <ul className="mt-3 divide-y rounded-xl border shadow-xl bg-gray/10">
@@ -123,7 +123,7 @@ export default function ProjectPage() {
                             </li>
                         ))}
                     </ul>
-                </div>
+                </div >
                 <MeetingsSection projectId={project.id} isLeader={isleader} />
             </div>
         </div>

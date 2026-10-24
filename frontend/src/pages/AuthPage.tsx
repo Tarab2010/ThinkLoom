@@ -1,11 +1,10 @@
 import { useState, type ComponentProps } from 'react';
-import { Navigate, Link, useNavigate,useLocation } from "react-router-dom";
+import { Navigate, Link,useLocation } from "react-router-dom";
 import { useAuthStore } from '../store/authstore';
 type FormSubmitEvent=Parameters<NonNullable<ComponentProps<'form'>['onSubmit']>>[0];
 export default function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
     const issignup = mode === 'signup';
     const { user, login, signup } = useAuthStore();
-    const navigate = useNavigate();
     const from=(useLocation().state as{from?:string}|null)?.from ??'/';
     const [form, setForm] = useState({ name: '', email: '', password: '' });
     const [error, setError] = useState('');
@@ -33,7 +32,8 @@ export default function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
         }}
         const input='w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-indigo-500';
     return (
-        <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
+        <div className="flex gap-3 flex-col min-h-screen items-center justify-center bg-gray-700 p-4">
+            <p className='font-bold text-5xl' >ThinkLoom</p>
             <form onSubmit={OnSubmit} action="" className="w-full max-w-sm space-y-4 rounded-2xl bg-white p-8 shadow">
                 <h1 className="text-2xl font-semibold">{issignup? "Create an Account":"Welcome back"}</h1>
                 {issignup && (

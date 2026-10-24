@@ -1,18 +1,25 @@
 import { useEffect,useState,type ComponentProps } from 'react'
-import{Link} from 'react-router-dom';
+import{Link,useNavigate} from 'react-router-dom';
 import { useAuthStore } from '../store/authstore';
 import { UseProjectStore } from '../store/projectstore';
+import { api } from '../lib/api';
 type FormSubmitEvent=Parameters<NonNullable<ComponentProps<'form'>['onSubmit']>>[0];
 const categories=['research','projects','hackathon','other'];
 export default function Dashboard(){
     const {projects,loading,fetchProjects,createProject}=UseProjectStore();
+    const navigate=useNavigate();
     const [form,setForm]=useState({name:'',description:'',category:''});
+    const [link,setLink]=useState('');
     const [error,setError]=useState('');
     const [creating,setCreating]=useState(false);
+    const [joining,setjoining]=useState(false);
     const user=useAuthStore((s)=>s.user);
     useEffect(()=>{
         fetchProjects();
     },[fetchProjects])
+    function pass(link:string){
+        return link.split('/join/')[1].trim();
+    }
     async function onCreate(e:FormSubmitEvent){
         e.preventDefault();
         setError('');
@@ -28,6 +35,30 @@ export default function Dashboard(){
             setCreating(false);
         }
     }
+    async function onJoin(e:FormSubmitEvent){
+        e.preventDefault();
+        setError('');
+        const code=pass(link);
+        if(!code){
+            setError('provide a link first');
+            return;
+        }
+        setjoining(true);
+        try{
+            const project=await api<{id:string}>('/projects/join',{
+                method:'POST',
+                body:JSON.stringify({invitecode:code}),
+            })
+            navigate(`/projects/${project.id}`);
+        }
+        catch(err){
+            setError(err instanceof Error?err.message:'Could not find the project');
+        }
+        finally{
+            setjoining(false);
+        }
+    }
+
     const {logout}=useAuthStore();
     const input='w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-indigo-500';
     return (
@@ -50,6 +81,13 @@ export default function Dashboard(){
                 </select>
                 {error && <p className='text-sm text-red-600'>{error}</p> }
                 <button disabled={creating} className='rounded-lg bg-indigo-600 px-4 py-2 font-medium text-white hover:bg-indigo-700 disabled:opacity-60'>{creating?'Creating..':'Create Project'}</button>
+            </form>
+            <form onSubmit={onJoin} className='mt-8 space-y-3 shadow-2xl rounded-2xl bg-neutral border border-amber-100 p-6 hover:border-indigo-400'>
+                <h2 className='font-medium'>Join Project</h2>
+                <input type="text" className={input} placeholder='paste you project link here' value={link} onChange={(e)=>setLink(e.target.value)} />
+                
+                {error && <p className='text-sm text-red-600'>{error}</p> }
+                <button disabled={joining} className='rounded-lg bg-indigo-600 px-4 py-2 font-medium text-white hover:bg-indigo-700 disabled:opacity-60'>{joining?'Joining..':'Join Project'}</button>
             </form>
             <h2 className='mt-10 font-medium'>Your Projects</h2>
             {loading?(
