@@ -117,14 +117,14 @@ export default function Dashboard() {
                             {
                                 projects.map((p) => (
                                     <li key={p.id} className='min-w-0 ' >
-                                        <Link className='flex min-w-0 item-center bg-white justify-between rounded-xl border  p-4 hover:border-indigo-400' to={`/projects/${p.id}`}>
-                                            <div className='flex-8 flex-col justify-between' >
+                                        <Link className='flex min-w-0 item-center bg-[#D5C2F0] shadow-stone-100 shadow-2xl justify-between rounded-xl border backdrop-blur-3xl border-white  p-4 hover:border-black' to={`/projects/${p.id}`}>
+                                            <div className='flex-8 flex-col  justify-between' >
                                                 <div className='min-w-0 flex flex-col ' >
-                                                    <h2 className='font-bold text-xl'>{p.name}</h2>
-                                                    <p className='line-clamp-3 text-sm wrap-anywhere'>{p.description}</p>
+                                                    <h2 className='font-bold text-xl '>{p.name}</h2>
+                                                    <p className='line-clamp-3 text-sm wrap-anywhere '>{p.description}</p>
                                                 </div>
                                                 <div className='flex gap-7' >
-                                                    <p className='text-sm overflow-clip font-semibold text-indigo-600'>{p.category}</p>
+                                                    <p className='text-sm overflow-clip font-semibold text-rose-800 '>{p.category}</p>
 
                                                 </div>
                                             </div>

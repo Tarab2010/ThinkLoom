@@ -4,6 +4,8 @@ import Project from '../models/Project.js';
 import Membership from '../models/Membership.js';
 import requireRole from '../middleware/projectrole.js';
 import requireauth from '../middleware/auth.js';
+import { projectRoom } from '../sockets/meetingSocket.js';
+import { resourceLimits } from 'worker_threads';
 const router=Router();
 router.use(requireauth);
 const summary=(project,role)=>({
@@ -39,11 +41,14 @@ router.post('/join',async(req,res)=>{
     if(!project){
         return res.status(404).json({error:'Invalid invite link'});
     }
-    await Membership.updateOne(
+    const r=await Membership.updateOne(
         {project:project._id,user:req.userId,},
         {$setOnInsert:{role:'viewer'}},
         {upsert:true}
     );
+    if(r.upsertedCount>0){
+        req.app.get('io')?.to(projectRoom(project._id)).emit('members:changed')
+    }
     res.json({id:project._id});
 })
 

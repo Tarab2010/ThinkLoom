@@ -3,6 +3,8 @@ import { Link, useParams } from 'react-router-dom';
 import type { Role } from "../store/projectstore";
 import MeetingsSection from "../Components/MeetingsSection";
 import { api } from '../lib/api';
+import { create } from "zustand";
+import { createSocket } from "../lib/socket";
 
 interface ProjectDetail {
     id: string;
@@ -24,6 +26,7 @@ export default function ProjectPage() {
     const [project, setProject] = useState<ProjectDetail | null>(null);
     const [members, setMembers] = useState<Member[]>([]);
     const [error, setError] = useState('');
+    const [mcount,setMcount]=useState(0);
     const [copied, setCopied] = useState(false);
     useEffect(() => {
         let cancelled = false;
@@ -48,6 +51,20 @@ export default function ProjectPage() {
             cancelled = true;
         };
     }, [projectId])
+    useEffect(()=>{
+        if(!project){
+            return;
+        }
+        const socket=createSocket();
+        
+        const subscribe=()=>socket.emit('project:subscribe',{projectId});
+        socket.on('connect', subscribe);
+        socket.on('members:changed', () => setMcount((prev) => prev + 1));
+        socket.connect();
+        return () => {
+            socket.disconnect();
+        }
+    },[projectId,mcount])
     async function changeRole(userId: string, role: Role) {
         try {
             await api(`/projects/${projectId}/members/${userId}`, {
@@ -79,7 +96,7 @@ export default function ProjectPage() {
     }
     const isleader = project.role === 'leader';
     return (
-        <div className="min-h-screen bg-gray-300 p-4 sm:p-8">
+        <div className="min-h-screen bg-linear-to-br from-purple-600 to-white p-4 sm:p-8">
             <div className="mx-auto max-w-6xl" >
                 <Link className="text-xl font-semibold  text-indigo-600 hover:underline" to='/'> {`<-Dashboard`}</Link>
 
@@ -102,7 +119,7 @@ export default function ProjectPage() {
                 )
             }
             {error && (<p className="mt-2 text-xs text-gray-500">{error}</p>)}
-            <div className=" mt-6 flex flex-col gap-6 bg-gray-300 lg:flex-row lg:items-start " >
+            <div className=" mt-6 flex flex-col gap-6 bg-transparent lg:flex-row lg:items-start " >
                 <div className="w-full lg:w-72 lg:shrink-0" >
                     <h2 className="mt-8 font-medium">Members</h2>
                     <ul className="mt-3 divide-y  rounded-xl border shadow-xl bg-gray/10">
