@@ -215,7 +215,7 @@ export default function IdealFileViewer({ url, attachment, canCrop = false,sourc
     })
     const useOnCanvas = () => run(async () => {
         const blob = await cropBlob(CANVAS_MAX_SIDE);
-        console.log('1 viewer',source);
+
         const detail = { blob, handled: false, done: (text: string) => setMsg(text),source};
         setMsg('Adding to the canvas...');
         window.dispatchEvent(new CustomEvent('thinkloom:add-image', { detail }));

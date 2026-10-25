@@ -1,39 +1,24 @@
 ThinkLoom 
 
-ThinkLoom is a web app that helps teams turn individual ideas into shared priorities. Participants add notes, group related ideas into clusters, vote on the most important ideas, and export the results. 
+ThinkLoom is a collaborative brainstorming app for group of people to present their ideas and discuss with each other under the supervision of a leader.Theleader can create projects invite others to the projects and can create meetings where the members and leaders have a shared canvas on which the leader and editors can make changes while the viewers can only view the canvas. Every member is allowed to submit thier ideas for the meeting and people can vote these ideas to show their support. The leader can present these ideas to the members and even crop the best parts from various ideas on canvas to make a better solution even the earlier meetings canvas can be used in the present meeting.
 
-The workflow is designed around four steps: Lobby → Diverge → Cluster → Converge → Results/Export. 
+The workflow is designed as: Project→ Meeting → Lobby → Canvas and ideas → final result. 
 
-How to use Constellate 
+How to use ThinkLoom
 
-Constellate guides your team through a structured brainstorming session from generating ideas to identifying priorities. 
+1. Create/Join a Project 
+Sign up or Log in to the app
+Create a project with name, description and category of project(generally research, project, hackathon and other) and you become this project's leader.Now share the invite link of this project to the members.
+The team members can paste the invite link asurl if they are not signed up then after signing up they are directly moved to the project page or else they can paste the invite link on the Join form present on the Dashboard. New members join the project as viewers the leader can change thier role to editores and viceversa.
 
-1. Create/Join a Room 
-
-Create or Join a room through room id 
-
-Optionally, enter a question to guide the brainstorming session 
-
-Share the room link with your teammates so they can join the same session 
-
-The room host can guide the team through the brainstorming phases. 
-
-2. Diverge (Generate Ideas) 
-
-In this phase, participants can contribute ideas to shared canvas. 
-
-Create sticky notes and write your ideas on them. 
-
-Move notes around the canvas to organize your workspace. 
-
-Use zoom and pan to navigate the board. 
-
-Contribute adding ideas while other participants contribute in real time. 
-
-Authors are hidden during this phase so participants can focus on ideas rather than who suggested them. 
-
-3. Cluster (Group related ideas) 
-
+2. Create a meeting
+The leader sets a title,topic and start date and time and duration for the meeting and can optionally choose to continue from an earlier meeting to use the canvas of the earlier meeting.
+Meetings can be upcoming,live and ended based on their time or a meeting can end if the leader ends the meeting before its duration.
+Even the earlier meetings links  are available where the members can see the finals cnvas of those meetings.
+The Leader can even set the role of members for the meeting before the metting begins.
+3. Join the meeting 
+The members join the meeting are are put in a lobby where they view the offline blank canvas until the leader admits them if the leader has the voice and video call open then after admittance the memers also join that call and can talk with each other.
+The leader has the authority to kickout a member out of the meeting
 Once everyone has contributed ideas, organize them into meaningful groups. 
 
 Identify notes that discuss similar topics. 

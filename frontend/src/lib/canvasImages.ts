@@ -115,7 +115,7 @@ export function createImageSync(base:string,onError?:(message:string)=>void){
             }
         },
         async add(blob:Blob,source?:IdeaSource){
-            console.log('1 source',source)
+
             if(!api){
                 throw new Error('The canvas is not ready yet');
             }

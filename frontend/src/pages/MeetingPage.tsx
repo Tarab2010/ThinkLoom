@@ -210,7 +210,7 @@ export default function MeetingPage() {
                     )}
                     {preview && meeting.status === 'live' && (
                         <>
-                            <span className="max-w-48 truncate text-sm text-gray-700">Previewing: {preview.title}</span>
+                            <span className="max-w-48 truncate text-sm text-white">Previewing: {preview.title}</span>
                         </>
                     )}
                     {isLeader && meeting.status === 'live' && (

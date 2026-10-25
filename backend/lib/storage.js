@@ -10,7 +10,6 @@ cloudinary.config({
     api_key:process.env.CLOUD_API,
     api_secret:process.env.CLOUD_SECRET,
 })
-console.log('CLOUD ENV', !!process.env.CLOUD_NAME, !!process.env.CLOUD_API, !!process.env.CLOUD_SECRET);
 export async function savef(buffer,ext){
     const key=`${randomUUID()}.${ext}`
     const publicId=`thinkloom/${key}`;

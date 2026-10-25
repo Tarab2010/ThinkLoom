@@ -68,7 +68,7 @@ export default function Dashboard() {
             <div className='mx-auto max-w-5xl ' >
                 <div className='flex items-center justify-between gap-3' >
                     <div className='flex flex-col' >
-                        <h1 className=' truncate font-bold text-2xl' >Think<span className='text-indigo-600' > Loom</span></h1>
+                        <h1 className=' truncate font-bold text-2xl z-30' >Think<span className='text-indigo-600' > Loom</span></h1>
                         <span className='text-sm' >Ideas work better together</span>
                     </div>
                     <div className='flex shrink-0 items-center gap-2' >

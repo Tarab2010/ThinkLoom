@@ -48,7 +48,7 @@ async function broadcastLobby(io, meetingId) {
     const sockets = await io.in(lobbyRoom(meetingId)).fetchSockets();
     const seen = new Map();
     for (const s of sockets) {
-        seen.set(s.data.user.id, { userId: s.data.user.id, name: s.data.user.name });
+        seen.set(s.data.user.id, { userId: s.data.user.id, name: s.data.user.name,wasKicked:!!s.data.wasKicked });
     }
     io.to(leaderRoom(meetingId)).emit('lobby:update', [...seen.values()]);
 }
@@ -267,11 +267,9 @@ export function initSockets(server) {
                         return reply({ error: 'meeting has not started yet' });
                     }
                     const adm = await MeetingAdmission.findOne({ meeting: meetingId, user: socket.data.user.id });
-                    if (adm?.state === 'denied') {
-                        return reply({ error: 'You were removed from this meeting' });
-                    }
                     if (adm?.state !== 'admitted') {
                         socket.data.waitingFor = meetingId;
+                        socket.data.wasKicked=adm?.state==='denied';
                         socket.join(lobbyRoom(meetingId));
                         await broadcastLobby(io, meetingId);
                         return reply({ waiting: true });
@@ -367,9 +365,6 @@ export function initSockets(server) {
             }
             if(allow){
             await MeetingAdmission.updateOne({meeting:meetingId,user:userId},{state:'admitted'},{upsert:true});
-        }
-        else{
-            await MeetingAdmission.deleteOne({meeting:meetingId,user:userId})
         }
             const inLobby = await io.in(lobbyRoom(meetingId)).fetchSockets();
 

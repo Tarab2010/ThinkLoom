@@ -21,7 +21,6 @@ app.get('/api/health',(req,res)=>{
     res.json({ok:true});
 })
 app.use('/api/projects/:projectId/meetings/:meetingId/calls',(req, res, next) => {
-  console.log('CALLS HIT', req.method, req.originalUrl);
   next();
 },callRouter);
 app.use('/api/auth', authRoutes);

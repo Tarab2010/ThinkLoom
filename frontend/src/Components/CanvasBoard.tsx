@@ -24,7 +24,7 @@ export default function CanvasBoard({ projectId, meetingId, onRoleChange, onEnde
     const [error, setError] = useState('');
     const [peopleOpen, setPeopleOpen] = useState(false);
     const socketRef = useRef<Socket | null>(null);
-    const [lobby, setLobby] = useState<{ userId: string, name: string }[]>([]);
+    const [lobby, setLobby] = useState<{ userId: string, name: string,wasKicked:boolean }[]>([]);
     const roleRef = useRef<Role | null>(null);
     const apiRef = useRef<ExcalidrawImperativeAPI | null>(null);
     const joined = useRef(false);
@@ -54,7 +54,6 @@ export default function CanvasBoard({ projectId, meetingId, onRoleChange, onEnde
         const onAddImage = (e: Event) => {
             const detail = (e as CustomEvent<{ blob: Blob; source?: IdeaSource, handled: boolean; done: (text: string) => void }>).detail;
             const r = roleRef.current;
-            console.log('1 source', detail.source)
             if (!apiRef.current || (r !== 'leader' && r !== 'editor')) {
                 return;
             }
@@ -166,7 +165,7 @@ export default function CanvasBoard({ projectId, meetingId, onRoleChange, onEnde
             }
         });
         socket.on('connect_error', (err) => {
-            console.log('socket error', err.message)
+
             if (closed) {
                 return;
             }
@@ -174,7 +173,6 @@ export default function CanvasBoard({ projectId, meetingId, onRoleChange, onEnde
             setError(err.message === 'Not Authenticated' ? 'Please login again' : 'Could not reachh the live session');
         });
         socket.on('scene:update', ({ elements }: { elements: SceneElement[] }) => {
-            console.log('REMOTE', elements.map((e: any) => `${e.type}${e.text ? ':' + e.text : ''}`))
             applyRemote(elements)
         });
         socket.on('pointer:update', (p: { socketId: string; userName: string; pointer: { x: number; y: number; tool: 'pointer' | 'laser' }; button: 'up' | 'down' }) => {
@@ -224,7 +222,7 @@ export default function CanvasBoard({ projectId, meetingId, onRoleChange, onEnde
         })
         socket.on('lobby:update', setLobby);
         socket.on('meeting:error', ({ message }: { message: string }) => setError(message));
-        socket.onAny((event, ...args) => console.log('SOCKET EVENT', event, args));
+
         socket.connect();
         return () => {
             closed = true;
@@ -269,7 +267,7 @@ export default function CanvasBoard({ projectId, meetingId, onRoleChange, onEnde
 
     const decide = (userId: string, allow: boolean) =>
         socketRef.current?.emit('lobby:decide', { userId, allow }, (res: { ok?: true, error?: string }) => {
-            console.log('lobby:decide reply', res);
+            
             if (res?.error) {
                 setError(res.error);
             }
@@ -319,7 +317,11 @@ export default function CanvasBoard({ projectId, meetingId, onRoleChange, onEnde
                 <div className="fixed bottom-4 right-4 z-50 w-72 max-w-[calc(100vw-2rem)] space-y-2">
                     {lobby.map((u) => (
                         <div key={u.userId} className="rounded-xl border border-amber-300 bg-amber-50 p-3 shadow-lg">
-                            <p className="text-sm font-medium">{u.name} wants to join</p>
+                            
+                            <p className="text-sm font-medium">{u.name} wants to join
+                                {u.wasKicked && <p className="text-red-500" >({u.name} was removed earlier)</p> }
+                            </p>
+                            
                             <div className="mt-2 flex gap-2">
                                 <button className="rounded-lg bg-indigo-600 px-3 py-1 text-sm text-white" onClick={() => decide(u.userId, true)}>Admit</button>
                                 <button className="rounded-lg border bg-white px-3 py-1 text-sm" onClick={() => decide(u.userId, false)}>Deny</button>
