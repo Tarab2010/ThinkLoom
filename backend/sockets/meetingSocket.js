@@ -149,12 +149,11 @@ async function broadcastPresence(io, meetingId) {
 }
 async function clearpresentation(io,meetingId){
     const id=String(meetingId);
-    console.log('CLEAR CHECK', id, 'has:', presenting.has(id), [...presenting.keys()]);
+
     if(!presenting.has(id)){
         return;
     }
     const left=await io.in(roomName(id)).fetchSockets();
-    console.log('LEFT ROLES', left.map((s) => s.data.role));
     if(left.some((s)=>s.data.role==='leader')){
         return;
     }
@@ -216,29 +215,29 @@ export function initSockets(server) {
         maxHttpBufferSize: 2e6,
     })
     io.use(async (socket, next) => {
-        console.log('socket auth: connection attempt')
+        
         try {
             const cookies = readCookies(socket.handshake.headers.cookie || '');
-            console.log('socket auth: cookies seen:', Object.keys(cookies));
+            
             const probe = (COOKIE_NAMES.map((n) => cookies[n]).find(Boolean) || '');
-            console.log('socket auth: token starts with:', JSON.stringify(probe.slice(0, 14)), 'length:', probe.length);
+            
             const token = COOKIE_NAMES.map((name) => cookies[name]).find(Boolean);
             if (!token) {
-                console.log('socket auth: no login cookie was sent ', Object.keys(cookies))
+
                 return next(new Error('Not Authenticated'));
             }
             const payload = jwt.verify(token, process.env.JWT_SECRET)
             const id = payload.id ?? payload.userId ?? payload._id ?? payload.sub
             const user = await User.findById(id).select('name');
             if (!user) {
-                console.log('socket auth:no user found in this token', payload)
+
                 return next(new Error('Not Authenticated'));
             }
             socket.data.user = { id: String(user._id), name: user.name };
             next();
         }
         catch (err) {
-            console.log('socket auth: token problem', err.message)
+
             next(new Error('Not Authenticated'));
         }
     })
@@ -373,7 +372,7 @@ export function initSockets(server) {
             await MeetingAdmission.deleteOne({meeting:meetingId,user:userId})
         }
             const inLobby = await io.in(lobbyRoom(meetingId)).fetchSockets();
-console.log('LOBBY SOCKETS', inLobby.map(s => s.data.user.id), 'deciding for', userId);
+
             for(const s of await io.in(lobbyRoom(meetingId)).fetchSockets()){
                 if(s.data.user.id===userId){
                     s.leave(lobbyRoom(meetingId));

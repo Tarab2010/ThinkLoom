@@ -99,7 +99,7 @@ export default function CallPannel({projectId, meetingId, isLeader, startcall }:
     if(!connection){
         return(
         <div className="flex items-center gap-2" >
-            <button disabled={busy} onClick={join} className="rounded-lg bg-indigo-600 px-3 py-1.5 text-sm text-white disabled:opacity-60" >
+            <button disabled={busy} onClick={join} className="rounded-lg bg-indigo-800 px-3 py-1.5 text-sm hover:bg-indigo-600 hover:text-white  text-white disabled:opacity-60" >
                 {busy?'Connecting...':'Join Call'}
             </button>
             {error && <p className="text-xs text-red-600" >{error}</p> }

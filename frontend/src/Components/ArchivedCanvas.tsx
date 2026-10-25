@@ -1,6 +1,6 @@
 import { Excalidraw } from "@excalidraw/excalidraw";
 import '@excalidraw/excalidraw/index.css'
-import type { BinaryFiles, Collaborator,ExcalidrawImperativeAPI,SocketId } from "@excalidraw/excalidraw/types";
+import type { BinaryFiles,ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
 import { api } from "../lib/api";
 import { useState,useEffect,useRef, useCallback } from "react";
 import { createImageSync, type ImageSync, type imageLike } from "../lib/canvasImages";
@@ -28,11 +28,11 @@ export default function ArchivedCanvas({projectId,meetingId}:{projectId:string,m
         imageRef.current?.setApi(a);
     },[]);
     return(
-        <div  >
+        <div >
             <p className="mb-2 text-sm text-gray-600">saved canavs </p>
             {error && <p className="mb-2 text-sm text-red-600">{error}</p> }
             {initial && (
-                <div  className="h-[70vh] overflow-hidden rounded-xl border bg-white">
+                <div  className="h-[70vh] min-h-[50vh] overflow-hidden rounded-xl border bg-white">
                     <Excalidraw
                     initialData={initial}
                     excalidrawAPI={handleApi}

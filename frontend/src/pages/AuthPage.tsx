@@ -1,7 +1,7 @@
 import { useState, type ComponentProps } from 'react';
 import { Navigate, Link,useLocation } from "react-router-dom";
 import { useAuthStore } from '../store/authstore';
-import logo from '../assets/image.png'
+import { Users,Lightbulb,MessagesSquare,NetworkIcon,LayersPlusIcon,Combine } from 'lucide-react';
 type FormSubmitEvent=Parameters<NonNullable<ComponentProps<'form'>['onSubmit']>>[0];
 export default function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
     const issignup = mode === 'signup';
@@ -40,24 +40,24 @@ export default function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
             <span className='text-4xl font-bold text-indigo-900 ' >To get your perfect result</span>
             <ul className='text-2xl gap-4 flex flex-col p-7' >
                 <li className='text-xl font-medium flex flex-start gap-2' >
-                <span className='rounded-full text-center shrink-0 bg-gray-400  w-9 h-9' >1</span>
+                <span > <Users/> </span>
                 <div>
                     <p className='flex gap-4' >Multiple People.</p>
-                    <p className='text-indigo-700' >Invite your whole team to project</p>
+                    <div className='flex gap-2' ><NetworkIcon className='text-indigo-800' /> <p className='text-indigo-700' >Invite your whole team to project</p></div>
                     </div>
                 </li>
                 <li className='text-xl font-medium flex flex-start gap-2' >
-                <span className='rounded-full text-center shrink-0 bg-gray-400  w-9 h-9' >2</span>
+                <span ><MessagesSquare/></span>
                 <div>
                     <p className='flex gap-4' >Multiple Ideas.</p>
-                    <p className='text-indigo-700' >Collect every idea at a single place</p>
+                    <div className='flex gap-2' > <LayersPlusIcon className='text-indigo-800' /> <p className='text-indigo-700' >Collect every idea at a single place</p></div>
                     </div>
                 </li>
                 <li className='text-xl font-medium flex flex-start gap-2' >
-                <span className='rounded-full text-center shrink-0 bg-gray-400  w-9 h-9' >3</span>
+                <span><Lightbulb/></span>
                 <div>
                     <p className='flex gap-4' >Single Solution.</p>
-                    <p className='text-indigo-700' >Merge every idea to get a perfect result</p>
+                    <div className='flex gap-2' > <Combine className='text-indigo-800' /> <p className='text-indigo-700' >Merge every idea to get a perfect result</p></div>
                     </div>
                 </li>
             </ul>
@@ -80,7 +80,7 @@ export default function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                 </div>
                 {error && (<p className='text-sm text-red-600'>{error}</p>)}
                 <button className='w-full rounded-lg bg-indigo-600 py-2 font-medium text-white hover:bg-indigo-700 disabled:opacity-60' disabled={submitting}>{submitting?"Please Wait...":issignup?"Sign Up":"Login"}</button>
-                <p className='text-sm text-gray-600 text-center'>{issignup?"Alread have an account? ":"Log in"}
+                <p className='text-sm text-gray-600 text-center'>{issignup?"Alread have an account? ":"First time here?  "}
                     <Link className='text-indigo-600 hover:underline' state={{from}} to={issignup?'/login':'/signup'}>{issignup?"Login":"Sign Up"}</Link>
                 </p>
             </form>

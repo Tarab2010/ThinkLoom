@@ -2,11 +2,11 @@ import { useEffect, useState, type ComponentProps } from "react";
 type FormSubmitEvent = Parameters<NonNullable<ComponentProps<'form'>['onSubmit']>>[0];
 import { Link } from "react-router-dom";
 import { api } from "../lib/api";
+import { Calendar,Clock } from "lucide-react";
 import { createSocket } from "../lib/socket";
 import { defaultstartupinput, type meetingstatus } from "../lib/meetingTime";
 import { type Role } from "../store/projectstore";
 import Meetblocks from "./Meetblocks";
-import { connect } from "socket.io-client";
 
 interface MeetingSummary {
     id: string;
@@ -100,24 +100,26 @@ export default function MeetingsSection({ projectId, isLeader, }: { projectId: s
             setCreating(false);
         }
     }
-    const input = 'w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-indigo-500';
+    const input = 'w-full rounded-lg border border-black px-3 py-2 outline-none focus:border-purple-800';
     return (
-        <section className="mt-10 flex bg-transparent items-center justify-center flex-col ">
-            <h2 className="font-medium">Meetings</h2>
+        <section className="mt-10 flex bg-tra items-center justify-center flex-col ">
+            <h2 className="font-medium text-xl">Meetings</h2>
             {isLeader && (
-                <form onSubmit={CreateMeeting} className="mt-3 w-9/10 border gap-2 rounded-2xl bg-white/5 shadow-2xl backdrop-blur-2xl p-4 z-10  m-7 space-y-3">
+                <form onSubmit={CreateMeeting} className="mt-3 w-9/10 border gap-2 rounded-2xl  border-black hover:border-violet-800 shadow-2xl backdrop-blur-2xl p-4 z-10  m-7 space-y-3">
+                    <label htmlFor="" className="font-semibold" >Meeting Title</label>
                     <input type="text" className={input} value={form.title} placeholder="Meeting title" onChange={(e) => setForm({ ...form, title: e.target.value })} />
+                    <label htmlFor="" className="font-semibold" >Meeting Topic</label>
                     <input type="text" className={input} value={form.topic} placeholder="Meeting's topic" onChange={(e) => setForm({ ...form, topic: e.target.value })} />
                     <div className="grid gap-3 sm:grid-cols-2">
-                        <label htmlFor="" className="text-m text-gray-900">
-                            Starts At
+                        <label htmlFor="" className=" text-black">
+                            <div className="flex gap-2" ><Calendar/> <p className="font-semibold">Starts At</p></div>
                             <input type="datetime-local" className={`${input} mt-1`} value={form.startsAt} placeholder="Meeting's topic" onChange={(e) => { setForm({ ...form, startsAt: e.target.value }); }} />
                         </label>
-                        <label htmlFor="" className="text-m text-gray-900">
-                            Duration
-                            <select name="" id="" className={`${input} mt-1`} value={form.duration} onChange={(e) => { setForm({ ...form, duration: e.target.value }); e.target.blur(); }} >
+                        <label htmlFor="" className=" text-black">
+                            <div className="flex gap-2" ><Clock/> <p className="font-semibold" >Duration</p></div>
+                            <select name="" id="" className={`${input} mt-1 `} value={form.duration} onChange={(e) => { setForm({ ...form, duration: e.target.value }); e.target.blur(); }} >
                                 {duration.map((d) => (
-                                    <option value={d} key={d}>
+                                    <option value={d} className="bg-transparent" key={d}>
                                         {d >= 60 ? `${d / 60} h${d % 60 ? ` ${d % 60}min ` : ''}` : `${d} min`}
                                     </option>
                                 ))}

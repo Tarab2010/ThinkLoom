@@ -162,7 +162,7 @@ router.put('/:ideaId/vote',member,async(req,res)=>{
 router.get('/present',member,async (req,res)=>{
     const id=String(req.meeting._id);
     const io=req.app.get('io');
-    const here=(await io?.in(`meeting:${id}`).fetchSockets())>>[];
+    const here=(await io?.in(`meeting:${id}`).fetchSockets())??[];
     const leaderhere=here.some((s)=>s.data.role==='leader');
 
     res.json({ideaId:leaderhere?presenting.get(String(req.meeting._id))??null:null})
@@ -173,7 +173,6 @@ router.post('/present',requiremeetingrole('leader'),async(req,res)=>{
     }
     const key=String(req.meeting._id);
     let ideaId=req.body.ideaId||null;
-    console.log('Present',req.body,'meeting',String(req.meeting._id))
     if(ideaId){
         const idea=mongoose.isValidObjectId(ideaId)?await Idea.findOne({_id:ideaId,meeting:req.meeting._id}):null;
         if(!idea){

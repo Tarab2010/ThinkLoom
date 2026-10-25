@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
-import { formatduration, formatWhen, statusStyle, type meetingstatus } from "../lib/meetingTime";
+import { User,Clock,Calendar } from 'lucide-react'
+import { formatduration, formatWhen, type meetingstatus } from "../lib/meetingTime";
 import type { Role } from "../store/projectstore";
 import CanvasBoard from "../Components/CanvasBoard";
 import IdeasPanel, { type PreviewData } from "../Components/IdeasPanel";
@@ -161,21 +162,35 @@ export default function MeetingPage() {
     }
     const fromTitle = other.find((m) => m.id === fromId)?.title;
     return (
-        <div className="flex min-h-screen flex-col bg-gray-600 lg:h-screen ">
-            <header className="flex flex-wrap items-center gap-3 bg-gray-700 px-4 py-2 border-b border-transparent rounded  ">
+        <div className="flex h-dvh flex-col bg-gray-600 ">
+            <header className="flex flex-wrap items-center gap-2 border-b border-transparent bg-[#20242D] px-3 py-2 md:gap-3 md:px-4">
                 <Link to={`/projects/${projectId}`} className="text-sm text-gray-400 hover:underline hover:text-white">← Project</Link>
                 <div className="min-w-0">
-                    <h1 className="truncate font-semibold text-gray-200">{meeting.title}</h1>
-                    <p className="truncate text-xs text-gray-300">{meeting.topic} · {formatWhen(meeting.startsAt, meeting.duration)} · {formatduration(meeting.duration)}</p>
+                    <div className="flex flex-wrap items-center gap-2 md:gap-4" >
+                        <h1 className="truncate font-semibold text-gray-200">{meeting.title}</h1>
+                        <div className="flex flex-col" >
+                            <div className="flex" >
+                                <User className="h-4 w-4 text-white " />
+                                <span className="text-xs text-gray-200">  You: {meeting.myRole}</span>
+                            </div>
+                            <div className="flex gap-1" >
+                                <Calendar className="text-white truncate text-xs h-4 w-4" />
+                            <p className="truncate text-xs text-white">{formatWhen(meeting.startsAt, meeting.duration)}  </p>
+                            <Clock className="text-sm text-white h-4 w-4" />
+                            <p className="text-white truncate text-xs" >{formatduration(meeting.duration)}</p>
+                        </div>
+                        </div>
+                        <div id="status-slot" className="flex items-center" ></div>
+                    </div>
+                    <div>
+                        <p className="hidden truncate text-sm text-white md:block" >{meeting.topic}</p>
+                    </div>
                 </div>
-                <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusStyle[meeting.status]}`}>{meeting.status}</span>
-                <span className="text-xs text-gray-200">You: {meeting.myRole}</span>
-
-                <div className="ml-auto flex items-center gap-2">
+                <div className="ml-auto flex flex-wrap items-center gap-2">
                     {info && <span className="text-xs text-green-700">{info}</span>}
                     {isLeader && meeting.status === 'live' && other.length > 0 && (
-                        <div className="relative flex items-center gap-2">
-                            <button onClick={() => setPickerOpen((o) => !o)} className="w-56 truncate rounded-lg border bg-white px-3 py-1.5 text-left text-sm">
+                        <div className="relative hidden  items-center gap-2 md:flex ">
+                            <button onClick={() => setPickerOpen((o) => !o)} className="w-40 lg:w-56 truncate rounded-lg border border-white text-white px-3 py-1.5 text-left text-sm">
                                 {fromTitle ? `From: ${fromTitle}` : 'Choose earlier meeting canvas'}
                             </button>
                             {pickerOpen && (
@@ -187,9 +202,10 @@ export default function MeetingPage() {
                                     ))}
                                 </ul>
                             )}
-                            <button onClick={importCanvas} disabled={!fromId || importing} className="rounded-lg bg-indigo-600 px-3 py-1.5 text-sm text-white disabled:opacity-60">
+                            <button onClick={importCanvas} disabled={!fromId || importing} className="rounded-lg disabled:bg-[#292D36] bg-indigo-800 px-3 py-1.5 text-sm text-white disabled:opacity-60">
                                 {importing ? 'Copying...' : 'Copy to canvas'}
                             </button>
+
                         </div>
                     )}
                     {preview && meeting.status === 'live' && (
@@ -198,31 +214,32 @@ export default function MeetingPage() {
                         </>
                     )}
                     {isLeader && meeting.status === 'live' && (
-                        <button onClick={endMeeting} disabled={ending} className="rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-60">
+                        <button onClick={endMeeting} disabled={ending} className="rounded-lg bg-red-800 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-60">
                             {ending ? 'Ending...' : 'End meeting'}
                         </button>
                     )}
                     {meeting.status === 'live' && projectId && meetingId && (
-                        <CallPannel  key={`${meetingId}-${ideasKey}`} projectId={projectId} meetingId={meetingId} isLeader={isLeader} startcall={true} />
+                        <CallPannel key={`${meetingId}-${ideasKey}`} projectId={projectId} meetingId={meetingId} isLeader={isLeader} startcall={true} />
                     )}
+                    <div className="relative" id="people-slot" ></div>
                 </div>
             </header>
 
             {error && <p className="bg-red-50 px-4 py-1 text-sm text-red-600">{error}</p>}
             {meeting.status === 'ended' && <p className="bg-amber-50 px-4 py-1 text-sm text-amber-800">This meeting has ended. Saved canvas (view only).</p>}
 
-            <div className="flex min-h-0 flex-1">
+            <div className="flex flex-col lg:flex-row min-h-0 flex-1">
                 {preview && meeting.status === 'live' && (
-                    <div className="w-1/2 overflow-auto border-r p-0 transition duration-300 ease-in-out z-20 bg-gray-800 ">
+                    <div className="w-full lg:w-1/2 overflow-auto border-r p-0 transition duration-300 ease-in-out z-20 bg-gray-800 ">
                         <IdealFileViewer endpreview={endPreview} key={preview.url} url={preview.url} attachment={preview.attachment} canCrop={isLeader} source={preview.source} />
                     </div>
                 )}
 
-                <div className="min-w-0 flex-1 overflow-auto p-3">
-                    <div>
+                <div className=" relative min-w-0 flex-1 min-h-[60vh] p-1 md:p-3">
+                    <div className="h-full" >
                         {meeting.status === 'live' && !preview && (
-                            <button onClick={() => setSidebar((prev) => !prev)} title={sidebar ? 'hide ideas' : 'show ideas'} className="absolute right-0 top-1/2 z-20 -translate-0.5 rounded-l-lg border border-r-0 bg-gray-800 px-1.5 py-4  text-gray-100 hover:bg-gray-200 hover:text-black " >
-                                {sidebar ? '->' : '<-'}
+                            <button onClick={() => setSidebar((prev) => !prev)} title={sidebar ? 'hide ideas' : 'show ideas'} className="absolute right-0 top-1/2 z-20 -translate-1/2 rounded-l-lg border border-r-0 bg-[#20242D] px-1.5 py-4  text-white text-2xl font-bold hover:bg-gray-200 hover:text-black " >
+                                {sidebar ? '>' : '<'}
                             </button>
                         )}
                         {projectId && meetingId && (
@@ -243,9 +260,8 @@ export default function MeetingPage() {
                     </div>
                 </div>
                 {projectId && meetingId && meeting.status === 'live' && (
-                    <aside className={`shrink-0 overflow-hidden border-l bg-white transition-[width] duration-300 ease-in-out ${sidebar && !preview ? 'w-80' : 'w-0 border-l-0'
-                        }`}>
-                        <div className="h-full w-80 bg-gray-800 overflow-y-auto p-3" >
+                    <aside className={`shrink-0 overflow-hidden border-l bg-white transition-[width] duration-300 ease-in-out max-lg:fixed max-lg:inset-y-0 max-lg:right-0 max-lg:z-40 ${sidebar && !preview ? 'w-80 max-w-[85vw]' : 'w-0 border-l-0'}`}>
+                        <div className="h-full w-80 max-w-[85vw] bg-[#20242D] overflow-y-auto p-3" >
                             <IdeasPanel key={`${meetingId}-${ideasKey}`} projectId={projectId} meetingId={meetingId}
                                 isLeader={isLeader} previewId={previewId} setPreviewId={setPreviewId} onPreview={setPreview} />
                         </div>

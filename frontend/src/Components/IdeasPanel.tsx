@@ -1,7 +1,7 @@
 import { createSocket } from "../lib/socket";
 import { api, apiUrl } from "../lib/api";
 import { useState, useEffect, useCallback, type ComponentProps, type ChangeEvent } from "react";
-import IdeaFileViewer, { type Attachment, setsize } from "./IdeaFileViewer";
+import { type Attachment, setsize } from "./IdeaFileViewer";
 type FormSubmitEvent = Parameters<NonNullable<ComponentProps<'form'>['onSubmit']>>[0];
 export interface PreviewData{
   url:string;
@@ -35,8 +35,7 @@ export default function IdeasPanel({ projectId, meetingId, isLeader, previewId,s
   const [busyId, setBusyId] = useState<string | null>(null);
   const [presentedId, setPresentedId] = useState<string | null>(null);
   const [showForm,setShowForm]=useState(false);
-  const [stageId, setStageId] = useState<string | null>(null);
-  const [requested, setRequested] = useState<string[]>([])
+
   const [byVotes, setByVotes] = useState(false);
 
   const load = useCallback(async () => {
@@ -192,7 +191,7 @@ export default function IdeasPanel({ projectId, meetingId, isLeader, previewId,s
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium">{idea.title}</p>
-                  {idea.description && <p className="mt-1 line-clamp-2 whitespace-pre-wrap break-words text-xs text-gray-600">{idea.description}</p>}
+                  {idea.description && <p className="mt-1 line-clamp-2 whitespace-pre-wrap warp-break-word text-xs text-gray-600">{idea.description}</p>}
                   <p className="mt-1 text-xs text-gray-500">by {idea.authorName}</p>
                 </div>
                 <button onClick={() => toggleVote(idea)} disabled={busyId === idea.id}
