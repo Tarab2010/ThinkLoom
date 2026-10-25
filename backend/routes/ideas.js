@@ -4,6 +4,7 @@ import Idea from '../models/Ideas.js';
 import mongoose from 'mongoose';
 import multer from 'multer';
 import Vote from '../models/Votes.js';
+import { presenting } from '../lib/presenting.js';
 import requireauth from '../middleware/auth.js';
 import {requiremeetingrole} from '../middleware/meetingrole.js';
 import { detectType,ALLOWED_TEXT } from '../lib/fileTypes.js';
@@ -13,7 +14,6 @@ const router=Router({mergeParams:true});
 router.use(requireauth);
 const member=requiremeetingrole();
 const MAX_IDEAS_PER_USER=30;
-const presenting=new Map();
 const MAX_FILE_MB=10;
 const upload=multer({
     storage:multer.memoryStorage(),
@@ -159,8 +159,13 @@ router.put('/:ideaId/vote',member,async(req,res)=>{
     live(req)?.emit('idea:votes',{ideaId:String(idea._id),votes});
     res.json({votes,myVote:true});
 });
-router.get('/present',member,(req,res)=>{
-    res.json({ideaId:presenting.get(String(req.meeting._id))??null})
+router.get('/present',member,async (req,res)=>{
+    const id=String(req.meeting._id);
+    const io=req.app.get('io');
+    const here=(await io?.in(`meeting:${id}`).fetchSockets())>>[];
+    const leaderhere=here.some((s)=>s.data.role==='leader');
+
+    res.json({ideaId:leaderhere?presenting.get(String(req.meeting._id))??null:null})
 })
 router.post('/present',requiremeetingrole('leader'),async(req,res)=>{
     if(meetingStatus(req.meeting)!=='live'){

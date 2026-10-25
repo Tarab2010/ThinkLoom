@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
 import User from '../models/User.js';
 import Membership from '../models/Membership.js';
+import {presenting} from '../lib/presenting.js'
 import Meeting from '../models/Meetings.js';
 import CanvasVersion from '../models/CanvasVersion.js';
 import { meetingStatus } from '../lib/meetingStatus.js';
@@ -145,6 +146,20 @@ async function broadcastPresence(io, meetingId) {
         role: s.data.role
     }))
     io.to(roomName(meetingId)).emit('presence', users);
+}
+async function clearpresentation(io,meetingId){
+    const id=String(meetingId);
+    console.log('CLEAR CHECK', id, 'has:', presenting.has(id), [...presenting.keys()]);
+    if(!presenting.has(id)){
+        return;
+    }
+    const left=await io.in(roomName(id)).fetchSockets();
+    console.log('LEFT ROLES', left.map((s) => s.data.role));
+    if(left.some((s)=>s.data.role==='leader')){
+        return;
+    }
+    presenting.delete(id);
+    io.to(ideasRoom(id)).emit('idea:present',{ideaId:null})
 }
 async function afterLeave(io, meetingId) {
     await broadcastPresence(io, meetingId);
@@ -441,6 +456,7 @@ console.log('LOBBY SOCKETS', inLobby.map(s => s.data.user.id), 'deciding for', u
             const { meetingId } = socket.data;
             if (meetingId) {
                 afterLeave(io, meetingId).catch((err) => console.error(err.message));
+                setTimeout(()=>clearpresentation(io,meetingId).catch(()=>{}),5000);
             }
         });
     });
