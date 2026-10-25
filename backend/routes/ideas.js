@@ -7,8 +7,8 @@ import Vote from '../models/Votes.js';
 import { presenting } from '../lib/presenting.js';
 import requireauth from '../middleware/auth.js';
 import {requiremeetingrole} from '../middleware/meetingrole.js';
-import { detectType,ALLOWED_TEXT } from '../lib/fileTypes.js';
-import { saveFile,pathFor,removeFile } from '../lib/storage.js';
+import { detectType} from '../lib/fileTypes.js';
+import {savef,readf,removef } from '../lib/storage.js';
 import { meetingStatus } from '../lib/meetingStatus.js';
 const router=Router({mergeParams:true});
 router.use(requireauth);
@@ -94,7 +94,7 @@ router.post('/',member, acceptUpload,async(req,res)=>{
         return res.status(400).json({error:`This file type is not allowed`})
     }
     const attachment={
-        key:await saveFile(req.file.buffer,type.ext),
+        key:await savef(req.file.buffer,type.ext),
         name:cleanName(req.file.originalname,type.ext),
         mime:type.mime,
         kind:type.kind,
@@ -109,7 +109,7 @@ router.post('/',member, acceptUpload,async(req,res)=>{
         await idea.populate('author','name');
     }
     catch(err){
-        await removeFile(attachment.key);
+        await removef(attachment.key);
         throw err;
     }
     live(req)?.emit('idea:new',{...baseIdea(idea),votes:0});
@@ -122,7 +122,18 @@ router.get('/:ideaId/file',member,async(req,res)=>{
     }
     const {key,name,mime,kind}=idea.attachment;
     const inline=!req.query.download && (kind==='image' || kind==='pdf');
-    res.sendFile(
+    try{
+        const buf=await readf(key);
+        res.set({
+            'Content-Type':mime,
+                'X-Content-Type-Options':'nosniff',
+                'Content-Disposition':`${inline?'inline':'attachment'};filename="${name}"`,
+                'Cache-Control': 'private, max-age=300',
+        });
+        res.send(buf);
+    }
+    catch{res.status(404).json({error:'file not found'})};
+    /* res.sendFile(
         pathFor(key),{
             dotfiles:'deny',
             headers:{
@@ -137,7 +148,7 @@ router.get('/:ideaId/file',member,async(req,res)=>{
                 res.status(404).json({error:'File not found'});
             }
         }
-    )
+    ) */
 })
 router.put('/:ideaId/vote',member,async(req,res)=>{
     if(meetingStatus(req.meeting)!=='live'){
