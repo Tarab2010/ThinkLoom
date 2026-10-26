@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, } from "react";
 import {LiveKitRoom, GridLayout, ParticipantTile, RoomAudioRenderer,ControlBar, useTracks, useParticipants,} from "@livekit/components-react";
 import { Track } from "livekit-client";
+import { VideoOff,MicOff,User2 } from "lucide-react";
 import "@livekit/components-styles";
 import { api } from "../lib/api";
 
@@ -34,12 +35,13 @@ function Controls({base}:{base:string}){
             {err && <p>{err}</p> }
             {others.length===0 && <p>no one else in the call</p> }
             {others.map((p)=>(
-                <div  className="flex flex-col gap-2" key={p.identity} >
-                    <span>{p.name || p.identity}</span>
+                <div  className="flex flex-col items-center border border-amber-50 gap-2" key={p.identity} >
+                    <div className="flex gap-2 " >
+                       <User2/> <span>{p.name || p.identity}</span></div>
                     <div className="flex items-center justify-center gap-2" >
-                    <button onClick={() => act(p.identity, "mic-off")} >Mute</button>
-                    <button onClick={() => act(p.identity, "camera-off")} >CameraOff</button>
-                    <button onClick={() => act(p.identity, "remove")} >Remove</button>
+                    <button onClick={() => act(p.identity, "mic-off")} ><MicOff className="hover:text-gray-400" /></button>
+                    <button onClick={() => act(p.identity, "camera-off")} ><VideoOff className="hover:text-gray-400" /></button>
+                    <button  className="text-red-500 hover:text-red-700 " onClick={() => act(p.identity, "remove")} >Remove</button>
                     </div>
                 </div>
             ))}
@@ -106,9 +108,10 @@ export default function CallPannel({projectId, meetingId, isLeader, startcall }:
         </div>)
     }
     return(
-        <div  data-lk-theme='default' className="fixed z-40 w-72 overflow-hidden rounded-xl border bg-gray-900 shadow-xl" style={{left:position.x, top:position.y}} >
-            <div className="cursor-grab touch-none select-none bg-gary-800 py-1 text-center active:cursor-grabbing " onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlepointerup} onPointerCancel={handlepointerup} data-lk-theme='default' >drag here</div>
+        <div  data-lk-theme='default' className="fixed z-40 w-80 [&_.lk-start-audio-button]:hidden! overflow-hidden rounded-xl border bg-gray-900 shadow-xl" style={{left:position.x, top:position.y}} >
+            <div className="cursor-grab touch-none select-none bg-gray-800 py-1 text-center text-x text-white active:cursor-grabbing " onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlepointerup} onPointerCancel={handlepointerup} data-lk-theme='default' >drag here</div>
             <LiveKitRoom token={connection.token} serverUrl={connection.url} connect audio={false} video={false} onDisconnected={()=>setConnection(null)} >
+                
                 <div className="h-48 relative"  ><Screen /></div>
                 <RoomAudioRenderer  />
                 <ControlBar  variation="minimal"onPointerDown={(e)=>e.stopPropagation()}  controls={{chat:false, screenShare:false}} />

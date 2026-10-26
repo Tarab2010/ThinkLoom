@@ -148,7 +148,7 @@ export default function IdeasPanel({ projectId, meetingId, isLeader, previewId,s
       }:null);
   },[ideas,previewId,base,onPreview]);
   const shown=byVotes?[...ideas].sort((a,b)=>b.votes-a.votes):ideas;
-  const input = 'w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-indigo-500';
+  const input = 'w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-black';
   return (
     <section >
       <div className="flex items-center justify-between" >
@@ -160,17 +160,17 @@ export default function IdeasPanel({ projectId, meetingId, isLeader, previewId,s
       </div>
       {showForm && (
          <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 p-4">
-        <form className="w-full max-w-md space-y-3 rounded-xl bg-white p-5 shadow-xl" onSubmit={onSubmit}>
-          <h3 className="font-semibold">Submit an idea</h3>
-          <input className="block w-full text-sm text-gray-600 file:mr-3 file:rounded-lg file:border file:bg-white file:px-3 file:py-1.5 file:text-sm hover:file:bg-gray-100" type="file"
+        <form className="w-full max-w-md space-y-3 rounded-xl border border-amber-50 bg-gray-500 p-5 shadow-xl" onSubmit={onSubmit}>
+          <h3 className="font-semibold text-amber-50">Submit an idea</h3>
+          <input className="block w-full text-sm text-black file:mr-3 file:rounded-lg file:border file:bg-white file:px-3 file:py-1.5 file:text-sm hover:file:bg-gray-100" type="file"
            key={fileKey} accept=".png,.jpg,.jpeg,.gif,.webp,.pdf,.docx" onChange={onPickFile} />
           <p className="text-xs text-gray-500">{`Image, pdf or docx up to ${MAX_FILE_MB}MB`}</p>
           <input type="text" className={input} value={form.title} placeholder="Idea's title" onChange={(e) => setForm({ ...form, title: e.target.value })} />
           <textarea className={`${input} min-h-20`} placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
           {error && <p className="text-sm text-red-600">{error}</p>}
           <div className="flex justify-end gap-2">
-            <button type="button" className="rounded-lg border px-3 py-1.5 text-sm" onClick={() => setShowForm(false)}>Cancel</button>
-            <button className="rounded-lg bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white disabled:opacity-60" disabled={submitting || !file}>
+            <button type="button" className="rounded-lg border px-3 hover:bg-black hover:text-white py-1.5 text-sm" onClick={() => setShowForm(false)}>Cancel</button>
+            <button className="rounded-lg bg-indigo-600 px-4 py-1.5 text-sm font-medium hover:text-indigo-600 hover:bg-white text-white disabled:opacity-60" disabled={submitting || !file}>
               {submitting ? 'Submitting...' : 'Submit'}
             </button>
           </div>

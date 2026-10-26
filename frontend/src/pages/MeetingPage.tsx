@@ -164,7 +164,7 @@ export default function MeetingPage() {
     return (
         <div className="flex h-dvh flex-col bg-gray-600 ">
             <header className="flex flex-wrap items-center gap-2 border-b border-transparent bg-[#20242D] px-3 py-2 md:gap-3 md:px-4">
-                <Link to={`/projects/${projectId}`} className="text-sm text-gray-400 hover:underline hover:text-white">← Project</Link>
+                <Link to={`/projects/${projectId}`} className="text-sm text-white hover:underline ">← Project</Link>
                 <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2 md:gap-4" >
                         <h1 className="truncate font-semibold text-gray-200">{meeting.title}</h1>
