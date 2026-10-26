@@ -26,7 +26,6 @@ export default function ProjectPage() {
     const [project, setProject] = useState<ProjectDetail | null>(null);
     const [members, setMembers] = useState<Member[]>([]);
     const [error, setError] = useState('');
-    const [mcount, setMcount] = useState(0);
     const [copied, setCopied] = useState(false);
     useEffect(() => {
         let cancelled = false;
