@@ -155,13 +155,14 @@ npm install
 
 create backend/.env like the backend/.env.example as:
 PORT=5000
-CLIENT_URL=http://localhost:5173
+CLIENT_URL=
 MONGO_UR
 JWT_SECRET=a-long-random-string
 CLOUD_NAME=
 CLOUD_API=
+NODE_ENV=
 CLOUD_SECRET=
-LIVE_URL=wss://your-project.livekit.cloud
+LIVE_URL=
 LIVE_API=
 LIVE_SECRET=
 
