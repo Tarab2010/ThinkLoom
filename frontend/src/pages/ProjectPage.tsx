@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams,useLocation } from 'react-router-dom';
 import type { Role } from "../store/projectstore";
 import MeetingsSection from "../Components/MeetingsSection";
 import { api } from '../lib/api';
@@ -27,6 +27,7 @@ export default function ProjectPage() {
     const [members, setMembers] = useState<Member[]>([]);
     const [error, setError] = useState('');
     const [copied, setCopied] = useState(false);
+    const notice = (useLocation().state as { notice?: string } | null)?.notice;
     useEffect(() => {
         let cancelled = false;
         (async () => {
@@ -131,6 +132,9 @@ export default function ProjectPage() {
                         <p className=" line-clamp-3  wrap-anywhere " >{project.description}</p>
                 </div>
             </div>
+            {notice&& ( 
+                <p className="mx-auto mt-4 max-w-lg rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-center text-sm text-red-700" >{notice}</p>
+            )}
             {
                 isleader && project.invitecode && (
                     <div className=" mt-6 flex  justify-center  " >

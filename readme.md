@@ -2,19 +2,21 @@ ThinkLoom
 
 ThinkLoom is a collaborative brainstorming app for group of people to present their ideas and discuss with each other under the supervision of a leader.Theleader can create projects invite others to the projects and can create meetings where the members and leaders have a shared canvas on which the leader and editors can make changes while the viewers can only view the canvas. Every member is allowed to submit thier ideas for the meeting and people can vote these ideas to show their support. The leader can present these ideas to the members and even crop the best parts from various ideas on canvas to make a better solution even the earlier meetings canvas can be used in the present meeting.
 
-The workflow is designed as: Project→ Meeting → Lobby → Canvas and ideas → final result. 
+The workflow is designed as: Project→ Meeting → Lobby → Canvas and ideas with voice and video call → final result. 
 
 How to use ThinkLoom
 
 1. Create/Join a Project 
 Sign up or Log in to the app
-Create a project with name, description and category of project(generally research, project, hackathon and other) and you become this project's leader.Now share the invite link of this project to the members.
-The team members can paste the invite link asurl if they are not signed up then after signing up they are directly moved to the project page or else they can paste the invite link on the Join form present on the Dashboard. New members join the project as viewers the leader can change thier role to editores and viceversa.
+Create a project with name, description and category of project(generally research, project, hackathon and other) and you become this project's leader
+Now share the invite link of this project to the members.
+The team members can paste the invite link as url if they are not signed up then after signing up they are directly moved to the project page or else they can paste the invite link on the Join form present on the Dashboard. 
+New members join the project as viewers the leader can change thier role to editores and viceversa.
 
 2. Create a meeting
 The leader sets a title,topic and start date and time and duration for the meeting and can optionally choose to continue from an earlier meeting to use the canvas of the earlier meeting.
 Meetings can be upcoming,live and ended based on their time or a meeting can end if the leader ends the meeting before its duration.
-Even the earlier meetings links  are available where the members can see the finals cnvas of those meetings.
+Even the earlier meetings links  are available where the members can see the finals canvas of those meetings.
 The Leader can even set the role of members for the meeting before the metting begins.
 
 3. Join the meeting 
@@ -22,16 +24,16 @@ The members join the meeting are are put in a lobby where they view the offline 
 The leader has the authority to change the role of a member during the meeting and can also  kickout a member out of the meeting but the member can re enter the lobby and request to re join the meeting but the leader can see a message as (member'name was removed earlier)
 If a member wishes to see the canvas of a meeting after the meeting has ended they can join the ended meeting and see the canvas that was made in that meetinh in a view only interface.
 Members cannot join the voice and video calls if the leader is not in the call. 
+Leader can turn off the mic and video of members and can remove members from the call.
 
 4. Work on canvas
 Leader and editors can write paste images, texts and even draw on excallidraw canvas.
 Viewers can only view the content on canvas.Leader can copy older meetings canvas on their current canvas to refresh the ideas and continue from where they left off earlier.  
 
-
 5. Ideas submission and voting
-evry member can submit thier pre prepared ideas in pdf,docx andimage format in this meeting using the right button and can even view how manyother ideas are submitted.
-The leader can present these ideas to he members and can even copy useful content from each submtted idea
-members can vote the ideas after seeing them and decide the best idea of all 
+evry member can submit their pre prepared ideas in pdf,docx and image format in this meeting using the right button and can even view other ideas that are submitted.
+The leader can present these ideas to the members and can even copy useful content from each submitted idea.
+Members can vote the ideas after seeing them and decide the best idea out of all the ideas submitted.
 
 6. Final result
 The leader can take parts of the provided ideas,use earlier meeting canvas and editors and leader can add these ideas and add other ideas during meeting on canvas thus combining all the ideas and reaching a final result which they can download in format of png and svg.
@@ -51,19 +53,19 @@ Idea submission-members can submit their pre prepared ides on docx,pdf and image
 
 Voting for ideas-members are allowed to vote the idea submitted by others anonymously.
 
-Video and voice call-members can connect toeach other through voice and video call.
+Video and voice call-members can connect to each other through voice and video call to tell their ideas and discuss by talking.
 
-Leader's authority- Leader can admin and remove people from meetings, they can change their roles from viewer to ediot ndvice versa also the submitted ideas are presented by the leader on the screen so members can get the preview of the idea. Video and voice calls can only take place when leader has joined the call.
+Leader's authority- Leader can admin and remove people from meetings, they can change their roles from viewer to editor nd vice versa also the submitted ideas are presented by the leader on the screen so members can get the preview of the idea. Video and voice calls can only take place when leader has joined the call and leader can turn off mic and video of members and even remove them from call.
 
 Idea crop on canvas- Leader can crop certain parts from the submitted ideas on canvas.
 
 Canvas history-the earlier meetings canvas are preserved in cloud storage so people can view them even after the meeting has ended.
 
-utilization of previous canvas-leader can use the earlier meetings canvas during the current meeting by copying their content on the canvas.
+Utilization of previous canvas-leader can use the earlier meetings canvas during the current meeting by copying their content on the canvas.
 
-start from where we left- while creating a meeting the leader can deside to start from an earlier meeting thus the meetings begins with the earlier meetings canvas instead of a new blank canvas.
+Start from where we left- while creating a meeting the leader can deside to start from an earlier meeting thus the meetings begins with the earlier meetings canvas instead of a new blank canvas.
 
-export the canvas- the finished canvas can be downloaded as png and svg file by the leader and editor and can be shared on other platforms by them.
+Export the canvas- the finished canvas can be downloaded as png and svg file by the leader and editor and can be shared on other platforms by them.
 
 
 Tech Stack 
@@ -199,7 +201,7 @@ LiveKIt voice and video calls-understanding the call flow, the backend token end
 
 Debugging and integration - investigating errors, reviewing component and backend interactions, and resolving issues found while integrating canvas features with real-time lobby behavior.
 
-Canvas and UI features - multi-page PDF export of the canvas, the invite-link join flow and lucide-react icons names for different things were found using Ai.
+Canvas and UI features - multi-page PDF export of the canvas, the invite-link join flow and lucide-react icons names for different things and LiveKit components for ui were found using Ai
 
 File handling - upload limits, file type checking, authenticated file serving, and moving file storage from local disk to Cloudinary and live preview of files during the meeting setup.
 

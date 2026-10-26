@@ -12,9 +12,9 @@ type SceneElement = { id: string, version: number, versionNonce?: number } & ima
 type InitialData = ComponentProps<typeof Excalidraw>['initialData'];
 
 type Person = { socketId: string, userId: string, name: string, role: Role };
-type JoinReply = { ok: true, role: Role, elements: SceneElement[] } | { waiting: true } | { error: string };
+type JoinReply = { ok: true, role: Role, elements: SceneElement[] } | { waiting: true } |  { error: string; ended?: boolean; blocked?: boolean };
 export default function CanvasBoard({ projectId, meetingId, onRoleChange, onEnded, onAdmitted, members = [], onChangeRole, Onremoved }:
-    { projectId: string; meetingId: string; onRoleChange?: (role: Role) => void; onEnded?: () => void; onAdmitted?: () => void; members?: { userId: string; name: string; role: Role }[]; onChangeRole?: (userId: string, role: Role) => void; Onremoved?: () => void }) {
+    { projectId: string; meetingId: string; onRoleChange?: (role: Role) => void; onEnded?: () => void; onAdmitted?: () => void; members?: { userId: string; name: string; role: Role }[]; onChangeRole?: (userId: string, role: Role) => void; Onremoved?: (msg?:string) => void }) {
     const [initial, setInitial] = useState<InitialData | null>(null);
     const [fromIdea, setFromIdea] = useState('')
     const OnremovedRef = useRef(Onremoved);
@@ -127,6 +127,9 @@ export default function CanvasBoard({ projectId, meetingId, onRoleChange, onEnde
                 if (closed) {
                     return;
                 }
+                if('blocked' in res && res.blocked){
+                    OnremovedRef.current?.();
+                }
                 if ('waiting' in res) {
                     setStatus('waiting');
                     return;
@@ -134,6 +137,9 @@ export default function CanvasBoard({ projectId, meetingId, onRoleChange, onEnde
                 if ('error' in res) {
                     setError(res.error);
                     setStatus('offline');
+                    if('blocked'in res && res.blocked){
+                        OnremovedRef.current?.('you are blocked from this meeting')
+                    }
                     if ('ended' in res && res.ended) {
                         onEndedRef.current?.();
                     }
@@ -202,9 +208,12 @@ export default function CanvasBoard({ projectId, meetingId, onRoleChange, onEnde
             }
             onRoleRef.current?.(newRole);
         });
-        socket.on('meeting:denied', () => {
+        socket.on('meeting:denied', ({blocked}:{blocked?:boolean}) => {
             setStatus('offline');
-            setError('Leader has not allowed you to enter')
+            setError(blocked?'You can no longer join this meeting':'Leader has not allowed you to enter')
+            if(blocked){
+                OnremovedRef.current?.('You are blocked from this meeting');
+            }
         });
         socket.on('meeting:kicked', () => {
             joined.current = false;

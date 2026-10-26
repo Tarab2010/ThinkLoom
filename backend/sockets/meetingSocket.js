@@ -267,6 +267,9 @@ export function initSockets(server) {
                         return reply({ error: 'meeting has not started yet' });
                     }
                     const adm = await MeetingAdmission.findOne({ meeting: meetingId, user: socket.data.user.id });
+                    if(adm?.state==='blocked'){
+                        return reply({error:'You cannot join this meeting',blocked:true})
+                    }
                     if (adm?.state !== 'admitted') {
                         socket.data.waitingFor = meetingId;
                         socket.data.wasKicked=adm?.state==='denied';
@@ -363,15 +366,27 @@ export function initSockets(server) {
             if(!meetingId || role!=='leader'||!mongoose.isValidObjectId(userId)){
                 return reply({ error: 'Not allowed' });
             }
+            let blocked=false;
             if(allow){
-            await MeetingAdmission.updateOne({meeting:meetingId,user:userId},{state:'admitted'},{upsert:true});
-        }
+            await MeetingAdmission.updateOne({meeting:meetingId,user:userId},{state:'admitted',denyCount:0},{upsert:true});
+            }
+            else{
+                const adm=await MeetingAdmission.findOne({meeting:meetingId,user:userId});
+                if(adm?.state==='denied'){
+                    adm.denyCount=(adm.denyCount??0)+1;
+                    if(adm.denyCount>=2){
+                        adm.state='blocked';
+                        blocked=true;
+                    }
+                    await adm.save()
+                }
+            }
             const inLobby = await io.in(lobbyRoom(meetingId)).fetchSockets();
 
             for(const s of await io.in(lobbyRoom(meetingId)).fetchSockets()){
                 if(s.data.user.id===userId){
                     s.leave(lobbyRoom(meetingId));
-                    s.emit(allow?'meeting:admitted':'meeting:denied')
+                    s.emit(allow?'meeting:admitted':'meeting:denied',{blocked})
                 }
             }
             await broadcastLobby(io,meetingId);
@@ -389,7 +404,7 @@ export function initSockets(server) {
             if(!meetingId || role!=='leader'||!mongoose.isValidObjectId(userId) || userId===user.id){
                 return reply({ error: 'Not allowed' });
             }
-            await MeetingAdmission.updateOne({meeting:meetingId,user:userId},{state:'denied'},{upsert:true});
+            await MeetingAdmission.updateOne({meeting:meetingId,user:userId},{state:'denied',denyCount:0},{upsert:true});
             for(const s of await io.in(roomName(meetingId)).fetchSockets()){
                 if(s.data.user.id===userId){
                     s.emit('meeting:kicked');

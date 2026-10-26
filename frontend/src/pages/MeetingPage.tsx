@@ -254,7 +254,7 @@ export default function MeetingPage() {
                                     onRoleChange={(r) => setMeeting((m) => (m ? { ...m, myRole: r } : m))}
                                     onEnded={() => navigate(`/projects/${projectId}`)}
                                     onAdmitted={() => setIdeasKey((k) => k + 1)}
-                                    Onremoved={() => navigate(`/projects/${projectId}`)}
+                                    Onremoved={(msg) => navigate(`/projects/${projectId}`,{state:{notice:msg??'You were removed from the meetinng'}})}
                                 />
                         )}
                     </div>

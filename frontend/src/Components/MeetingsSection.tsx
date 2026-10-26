@@ -102,7 +102,7 @@ export default function MeetingsSection({ projectId, isLeader, }: { projectId: s
     }
     const input = 'w-full rounded-lg border border-black px-3 py-2 outline-none focus:border-purple-800';
     return (
-        <section className="mt-10 flex bg-tra items-center justify-center flex-col ">
+        <section className="mt-10 flex bg-transparent items-center justify-center flex-col ">
             <h2 className="font-medium text-xl">Meetings</h2>
             {isLeader && (
                 <form onSubmit={CreateMeeting} className="mt-3 w-9/10 border gap-2 rounded-2xl  border-black hover:border-violet-800 shadow-2xl backdrop-blur-2xl p-4 z-10  m-7 space-y-3">
