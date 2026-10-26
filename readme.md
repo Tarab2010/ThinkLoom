@@ -16,282 +16,197 @@ The leader sets a title,topic and start date and time and duration for the meeti
 Meetings can be upcoming,live and ended based on their time or a meeting can end if the leader ends the meeting before its duration.
 Even the earlier meetings links  are available where the members can see the finals cnvas of those meetings.
 The Leader can even set the role of members for the meeting before the metting begins.
+
 3. Join the meeting 
 The members join the meeting are are put in a lobby where they view the offline blank canvas until the leader admits them if the leader has the voice and video call open then after admittance the memers also join that call and can talk with each other.
-The leader has the authority to kickout a member out of the meeting
-Once everyone has contributed ideas, organize them into meaningful groups. 
+The leader has the authority to change the role of a member during the meeting and can also  kickout a member out of the meeting but the member can re enter the lobby and request to re join the meeting but the leader can see a message as (member'name was removed earlier)
+If a member wishes to see the canvas of a meeting after the meeting has ended they can join the ended meeting and see the canvas that was made in that meetinh in a view only interface.
+Members cannot join the voice and video calls if the leader is not in the call. 
 
-Identify notes that discuss similar topics. 
+4. Work on canvas
+Leader and editors can write paste images, texts and even draw on excallidraw canvas.
+Viewers can only view the content on canvas.Leader can copy older meetings canvas on their current canvas to refresh the ideas and continue from where they left off earlier.  
 
-Group related notes into clusters. 
 
-Give each cluster a descriptive name. 
+5. Ideas submission and voting
+evry member can submit thier pre prepared ideas in pdf,docx andimage format in this meeting using the right button and can even view how manyother ideas are submitted.
+The leader can present these ideas to he members and can even copy useful content from each submtted idea
+members can vote the ideas after seeing them and decide the best idea of all 
 
-Use connectors to show relationships between ideas. 
+6. Final result
+The leader can take parts of the provided ideas,use earlier meeting canvas and editors and leader can add these ideas and add other ideas during meeting on canvas thus combining all the ideas and reaching a final result which they can download in format of png and svg.
 
-When zoomed out, clusters appear as summary bubbles, making larger boards easier to navigate. 
-
-4. Converge (Vote on ideas) 
-
-In this phase, participants vote on ideas and clusters they consider most valuable. 
-
-Review the notes and clusters on the board. 
-
-Use your available vote dots to support important ideas. 
-
-Distribute your votes according to your priorities. 
-
-Observe the voting indicators to see which ideas receive the most support. 
-
-Ideas with stronger voting support receive greater visual emphasis, helping the team identify popular suggestions and shared priorities. 
-
-5. Results 
-
-After the Converge phase begins, open the Results page to review the outcome of the brainstorming session. 
-
-Review the ranked ideas and clusters. 
-
-Identify the suggestions that received the most votes. 
-
-Use the export option to download the results as a Markdown (.md) file. 
-
-The exported file can be saved, shared with teammates or used in meeting notes, project, documentation and future planning. 
 
 Features 
 
-Shared brainstorming canvas — create, edit, move, and style notes on a zoomable canvas. 
+Real time shared canvas — Members can view, edit(only editors and leader) the canvas with text,images,notes and doddle and everyone can see name of the person who is editing the canvas at that time through cursors. 
 
-Real-time collaboration — room participants can see board updates and other participants' cursors through Socket.IO. 
+Projects creation and invitecode- create project and invite members using the invitecode. 
 
-Room links and participant names — create a room and invite others to join it. 
+Meetings time-meeting can be et for later days and time as upcoming.
 
-Session question — give the brainstorm a central question to guide the discussion. 
+Waiting in lobby-members first wait in lobby before the leader admit them into the meeting.
 
-Silent brainstorming — authors can be hidden during Diverge so ideas can be considered on their own. 
+Idea submission-members can submit their pre prepared ides on docx,pdf and image format in meeting.
 
-Clusters — group related notes and name the themes. 
+Voting for ideas-members are allowed to vote the idea submitted by others anonymously.
 
-Connectors — draw connections between related notes, including curved arrows. 
+Video and voice call-members can connect toeach other through voice and video call.
 
-Phases — organize the session into Diverge, Cluster, and Converge stages. 
+Leader's authority- Leader can admin and remove people from meetings, they can change their roles from viewer to ediot ndvice versa also the submitted ideas are presented by the leader on the screen so members can get the preview of the idea. Video and voice calls can only take place when leader has joined the call.
 
-Dot-budget voting — participants use a limited number of votes to highlight important notes and clusters. 
+Idea crop on canvas- Leader can crop certain parts from the submitted ideas on canvas.
 
-Results and Markdown export — review vote results and export the brainstorm as Markdown. 
+Canvas history-the earlier meetings canvas are preserved in cloud storage so people can view them even after the meeting has ended.
 
-Canvas navigation — pan and zoom, fit the board to the viewport, and use the minimap. 
+utilization of previous canvas-leader can use the earlier meetings canvas during the current meeting by copying their content on the canvas.
 
-Room persistence — room state can be saved as JSON files by the backend. 
+start from where we left- while creating a meeting the leader can deside to start from an earlier meeting thus the meetings begins with the earlier meetings canvas instead of a new blank canvas.
+
+export the canvas- the finished canvas can be downloaded as png and svg file by the leader and editor and can be shared on other platforms by them.
+
 
 Tech Stack 
 
-React — frontend UI and component structure. 
+React,Typescript — frontend UI and component structure. 
 
 Vite — frontend development server and build tool. 
 
-Tailwind CSS v4 — styling and design tokens. 
+Tailwind CSS,lucide react — styling, designing and icons  
 
-Konva / React-Konva — canvas rendering and interactive canvas objects. 
+Excalidraw — canvas. 
+
+LiveKit-voice and video call
+
+MongoDB atlas-storage and database of users,meetings and projects
 
 React Router — client-side navigation. 
 
-Axios — HTTP requests to the backend API. 
-
 Node.js and Express — backend API and room management. 
+
+Excalidraw export-exporting the canvas file
+
+JWT,bcrypt,httpOnly cookie — authentication
 
 Socket.IO — real-time room events, board synchronization, and cursor updates. 
 
-JSON file persistence — local room state storage during development. 
+Cloudinary,multer —  cloud storage of pdf,docx and images
 
-npm — dependency management. 
+Pdf.js,docx-preview,html-to-image — for preview of the submitted ideas
 
-Project Structure 
 
-Constellate/ 
+Project Structure
 
-├── Backend/ 
+ThinkLoom/
 
-│   ├── src/ 
+├── backend/
+│   ├── config/                   # Database connection
+│   │                    
+│   ├── lib/                      #Helper function for file storage,file types and meeting status   
+│   ├── middleware/               #Authentication and role functions 
+│   ├── models/                   #MongoDB Schemas
+│   ├── routes/                   # express routes
+│   ├── sockets/                  #real time connection socketio functions for server side
+│   ├── uploads/                  # Local uploaded files (git-ignored, runtime only)
+│   ├── .env                      # Secrets (never committed)
+│   └── server.js                 # main server file,Express and Socket.IO entry point
 
-│   │   ├── config/       # Environment configuration 
+├── frontend/
+│   ├── public/                        # static files, favicon and logo(default vite)
+│   ├── src/
+│   │   ├── assets/                    # Images and icons
+│   │   ├── Components/                # Canvas, call pannel,meeting section,meeting card 
+│   │   ├── lib/                       # Api sockets and canvas file helpers
+│   │   ├── pages/                     # Dashboard,auth page,project page,meeting page
+│   │   ├── store/                     # Zustand stores for project and authentication details
+│   │   ├── App.tsx                    # Routes
+│   │   ├── App.css
+│   │   ├── index.css                  # Tailwind and global styles
+│   │   └── main.tsx                   
+│   ├── index.html
+│   ├── vite.config.ts
+│   ├── tsconfig.json
+│   ├── tsconfig.app.json
+│   ├── tsconfig.node.json
+│   ├── eslint.config.js
+│   └── package.json
+├── .gitignore
+└── README.md
 
-│   │   ├── controllers/  # HTTP route controllers 
-
-│   │   ├── lib/          # Room logic and persistence 
-
-│   │   ├── routes/       # Express routes 
-
-│   │   └── sockets/      # Socket.IO event handlers 
-
-│   ├── data/             # Local persisted room files (created at runtime) 
-
-│   ├── server.js 
-
-│   └── .env.example 
-
-├── Frontend/ 
-
-│   ├── src/ 
-
-│   │   ├── app/           # Router and app setup 
-
-│   │   ├── features/      # Feature-specific API and hooks 
-
-│   │   ├── components/    # Shared UI and canvas components 
-
-│   │   ├── lib/           # API, socket, and identity helpers 
-
-│   │   └── styles/        # Global styles and design tokens 
-
-│   └── .env.example 
-
-└── README.md 
-
-Folder contents may evolve as the project develops. 
+Folder contents may evolve as the project develops.
 
 How to Run Locally 
 
 1. Clone or download the repository 
 
-git clone https://github.com/Naynsi2012/Constellate.git 
+git clone https://github.com/Tarab2010/ThinkLoom.git 
 
-cd Constellate 
+cd ThinkLoom
 
-If you downloaded the source as a ZIP, extract it and open a terminal in the extracted project folder. 
+2. Config backend
 
-2. Configure the backend environment 
-
-cd Backend 
+cd backend 
 
 npm install 
 
-cp .env.example .env 
-
-On Windows Command Prompt, use copy .env.example .env instead of cp. 
-
-Open Backend/.env and update the values if needed: 
-
-# Required 
-
-FRONTEND_URL=http://localhost:5173 
-
-PORT=3000 
-
-NODE_ENV=development 
-
- 
-
-# Optional 
-
-DATA_DIR=./data/rooms 
-
-ROOM_TTL=3d 
-
-ROOM_CLEANUP_INTERVAL=1h 
+create backend/.env like the backend/.env.example as:
+PORT=5000
+CLIENT_URL=http://localhost:5173
+MONGO_UR
+JWT_SECRET=a-long-random-string
+CLOUD_NAME=
+CLOUD_API=
+CLOUD_SECRET=
+LIVE_URL=wss://your-project.livekit.cloud
+LIVE_API=
+LIVE_SECRET=
 
 3. Start the backend 
 
-Run this from the Backend directory: 
-
 npm run dev 
 
-The backend will use the configured port, normally http://localhost:3000. 
+The backend server runs on http://localhost:5000. 
 
-4. Configure the frontend environment 
+4. Configure the frontend 
 
-Open a second terminal from the project root: 
+Open a second terminal  
 
-cd Frontend 
+cd frontend 
 
 npm install 
 
-cp .env.example .env 
+In development, Vite proxies /api and /socket.io to the backend on port 5000, so no extra variable is needed. For a deployed build, create frontend/.env with:
 
-On Windows Command Prompt, use copy .env.example .env. Congratulations! We were very impressed with your application and are pleased to invite you to the next stage of the interview process for the [Job Title] position at [Company Name]. 
+VITE_API_URL=
+VITE_SOCKET_URL=
 
-We would like to invite you for an online interview next Sunday, [Date], between 11:00 AM and 11:00 PM. 
+Start the frontend
 
-To help us schedule your session efficiently, please fill out the Google Form linked below with your details and indicate your preferred time slot within the given window: 
+npm run dev
 
-🔗 [Insert Google Form Link Here] 
+Open http://localhost:5173
 
-Please note that your preferred slot is subject to availability, and we will do our best to accommodate your choice. 
+You will see the signup page create your account and use the app use the app in two tabs one normal andother incognito tab to create project and meetings and join using both the tabs.
 
-Once your slot is confirmed, you will receive a follow-up confirmation email containing the meeting link along with important guidelines and instructions for the interview. 
-
-If you have any urgent questions or face issues with the form, please feel free to reply directly to this email. 
-
-We look forward to meeting with you! 
-
-Best regards, 
-
-[Your Name] 
-
-HR Manager 
-
-[Company Name] 
-
-[Contact Information / Website] 
-
- 
-
-The frontend .env should contain the backend API URL: 
-
-VITE_API_URL=http://localhost:3000 
-
-5. Start the frontend 
-
-Run this from the Frontend directory: 
-
-npm run dev 
-
-Vite will print the local URL. It is usually: 
-
-http://localhost:5173 
-
-Keep both the backend and frontend terminals running while developing. 
 
 AI Usage 
 
 AI assistance was used during development as a support tool for implementation, debugging, and understanding parts of the codebase. In particular, AI was used to help with: 
 
-Curved connector and arrow bending — working through the geometry for curved arrows, control points, arrowheads, and how connector bends are rendered on the canvas. 
+Socket.IO connections - understanding client/server connection setup, joining rooms, event handling, broadcasting updates, and synchronizing shared canvas,lobby and meeting-list state . 
 
-Socket.IO connections — understanding client/server connection setup, joining rooms, event handling, broadcasting updates, and synchronizing shared room state. 
+LiveKIt voice and video calls-understanding the call flow, the backend token endpoint and testing calls locally with the LiveKit dev server.
 
-Debugging and integration — investigating errors, reviewing component and backend interactions, and resolving issues found while integrating canvas features with real-time room behavior. 
+Debugging and integration - investigating errors, reviewing component and backend interactions, and resolving issues found while integrating canvas features with real-time lobby behavior.
 
-Project setup — clarifying environment configuration and how the frontend API and backend server communicate. 
+Canvas and UI features - multi-page PDF export of the canvas, the invite-link join flow and lucide-react icons names for different things were found using Ai.
 
-AI suggestions were reviewed and adapted during implementation. The project’s final behavior should be validated through local testing, particularly for multi-user synchronization and phase permissions. 
+File handling - upload limits, file type checking, authenticated file serving, and moving file storage from local disk to Cloudinary and live preview of files during the meeting setup.
 
- 
-Congratulations! We were very impressed with your application and are pleased to invite you to the next stage of the interview process for the Full Stack Developer Intern position at The Humble Foundry Private Limited. 
+Project setup and deployment - clarifying environment configuration, how the frontend API and backend server communicate, git cleanup, and hosting on Render and Vercel.
 
-We would like to invite you for an online interview on 25th October,2026 between 11:00 AM and 11:00 PM. 
+AI suggestions were reviewed and adapted during implementation by local testing. 
 
-To help us schedule your session efficiently please reply with your preferred time slot before 9:00 a.m. of 25th October, 2026. 
-
-Please fill out the Google Form linked below with your details: 
-
-🔗  
-
-Please note that your preferred slot is subject to availability, and we will do our best to accommodate your choice. 
-
-Once your slot is confirmed, you will receive a follow-up confirmation email containing the meeting link along with important guidelines and instructions for the interview. 
-
-If you have any urgent questions or face issues with the form, please feel free to reply directly to this email. 
-
-We look forward to meeting with you! 
-
-Best regards, 
-
-Krishna Chauhan 
-
-Operations Intern 
-
-The Humble Foundry Private Limited 
-
-krishnachauhan@thehumblefoundry.com 
-
+Author
+Shashwat Jaiswal
  

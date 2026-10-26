@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from 'react-router-dom';
 import type { Role } from "../store/projectstore";
 import MeetingsSection from "../Components/MeetingsSection";
@@ -51,20 +51,46 @@ export default function ProjectPage() {
             cancelled = true;
         };
     }, [projectId])
+    const loadmembers=useCallback(async()=>{
+        try{
+            setMembers(await api<Member[]>(`/projects/${projectId}/members`))
+        }
+        catch{}
+    },[projectId])
+    useEffect(()=>{
+        let cancelled=false;
+        (async()=>{
+            try{
+                const p=await api<ProjectDetail>(`/projects/${projectId}`);
+                if(!cancelled){
+                    setProject(p);
+                }
+                if(!cancelled){
+                    await loadmembers();
+                }
+            }
+            catch(err){
+                if(!cancelled){
+                    setError(err instanceof Error ?err.message:'failed to load project');
+                }
+            }
+        })();
+        return ()=>{cancelled=true;}
+    },[projectId,loadmembers])
     useEffect(() => {
-        if (!project) {
+        if (!projectId) {
             return;
         }
         const socket = createSocket();
 
         const subscribe = () => socket.emit('project:subscribe', { projectId });
         socket.on('connect', subscribe);
-        socket.on('members:changed', () => setMcount((prev) => prev + 1));
+        socket.on('members:changed', loadmembers);
         socket.connect();
         return () => {
             socket.disconnect();
         }
-    }, [projectId, mcount])
+    }, [projectId, loadmembers])
     async function changeRole(userId: string, role: Role) {
         try {
             await api(`/projects/${projectId}/members/${userId}`, {

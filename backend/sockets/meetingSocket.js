@@ -189,7 +189,7 @@ export async function refreshMeetingRoles(io, meetingId,memberId=null) {
     try {
         const sockets = await io.in(roomName(meetingId)).fetchSockets();
         for (const s of sockets) {
-            if(!memberId && s.data.user.id!==String(memberId)){
+            if(memberId && s.data.user.id!==String(memberId)){
                 continue;
             }
             const membership = await Membership.findOne({
