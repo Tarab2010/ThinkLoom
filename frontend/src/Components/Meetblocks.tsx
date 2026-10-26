@@ -8,7 +8,7 @@ export default function Meetblocks({ title, topic, duration, startsAt, status }:
                 <h3 className="font-bold mt-3 text-xl"  >{title}</h3>
                 <span className={`absolute right-0 top-0 mr-1 mt-1  ${status === 'live' ? 'bg-green-300 text-green-800' : status === 'upcoming' ? 'bg-blue-300 text-blue-700' : 'bg-red-300 text-red-700'} rounded-2xl p-1 `} >{status}</span>
             </div>
-            <p className=" font-semibold m-1 p-2" >{topic}</p>
+            <p className=" m-1 line-clamp-2 w-full px-2 text-center font-semibold [overflow-wrap:anywhere]" >{topic}</p>
             <div className="flex gap-10 " >
                 <div className="flex font-bold items-center flex-col" >
                     <div className="flex gap-2" ><Calendar /><p>Start's From</p></div>

@@ -131,7 +131,7 @@ export default function ProjectPage() {
                     <p className="max-w-2xl text-lg font-bold ">{project.category}</p>
                         <p className=" line-clamp-3  wrap-anywhere " >{project.description}</p>
                 </div>
-            </div>
+            
             {notice&& ( 
                 <p className="mx-auto mt-4 max-w-lg rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-center text-sm text-red-700" >{notice}</p>
             )}
@@ -175,6 +175,7 @@ export default function ProjectPage() {
                     </ul>
                 </div >
                 <MeetingsSection projectId={project.id} isLeader={isleader} />
+                </div>
             </div>
         </div>
     )

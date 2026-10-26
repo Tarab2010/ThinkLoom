@@ -148,7 +148,7 @@ export default function MeetingsSection({ projectId, isLeader, }: { projectId: s
             ) : meetings.length === 0 ? (
                 <p className="w-full" >No meetings yet{isLeader ? ' Create the first meeting' : ''}</p>
             ) : (
-                <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-1 xl:grid-cols-2">
+                <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(min(100%,20rem),20rem)) xl:grid-cols-2">
                     {
                         meetings.map((m) => (
 

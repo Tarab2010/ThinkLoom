@@ -53,6 +53,8 @@ Idea submission-members can submit their pre prepared ides on docx,pdf and image
 
 Voting for ideas-members are allowed to vote the idea submitted by others anonymously.
 
+Removal from meeting-If a member has been rmoved from the meeting by leader and then they are again denied 2 times when they try to re join then they are not eligible to join that meting.
+
 Video and voice call-members can connect to each other through voice and video call to tell their ideas and discuss by talking.
 
 Leader's authority- Leader can admin and remove people from meetings, they can change their roles from viewer to editor nd vice versa also the submitted ideas are presented by the leader on the screen so members can get the preview of the idea. Video and voice calls can only take place when leader has joined the call and leader can turn off mic and video of members and even remove them from call.

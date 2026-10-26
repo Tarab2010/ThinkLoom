@@ -5,11 +5,11 @@ import { UseProjectStore } from '../store/projectstore';
 import { api } from '../lib/api';
 import { UserPlus } from 'lucide-react';
 type FormSubmitEvent = Parameters<NonNullable<ComponentProps<'form'>['onSubmit']>>[0];
-const categories = ['research', 'projects', 'hackathon', 'other'];
+const categories = ['research', 'project', 'hackathon', 'other'];
 export default function Dashboard() {
     const { projects, loading, fetchProjects, createProject } = UseProjectStore();
     const navigate = useNavigate();
-    const [form, setForm] = useState({ name: '', description: '', category: '' });
+    const [form, setForm] = useState({ name: '', description: '', category: 'research' });
     const [link, setLink] = useState('');
     const [error, setError] = useState('');
     const [joinError, setjoinError] = useState('');
@@ -28,7 +28,7 @@ export default function Dashboard() {
         setCreating(true);
         try {
             await createProject(form);
-            setForm({ name: '', description: '', category: 'projects' });
+            setForm({ name: '', description: '', category: 'research' });
         }
         catch (err) {
             setError(err instanceof Error ? err.message : 'Could not create project');
@@ -130,8 +130,8 @@ export default function Dashboard() {
                                                 </div>
                                             </div>
                                             <div className='flex justify-between items-end flex-2 flex-col ' >
-                                                <span className={` rounded-full h-auto w-1/2 max-w-full text-center shrink-0  text-xs px-3 py-1 font-medium ${p.role === 'leader' ? 'text-green-700 bg-green-200' : p.role === 'editor' ? ' bg-blue-200 text-blue-600 ' : 'text-orange-700 bg-orange-200'}`}>{p.role}</span>
-                                                <button className='h-9 font-bold  rounded-lg p-1 text-indigo-600 hover:text-white hover:bg-indigo-600' >{`Open->`}</button>
+                                                <span className={` rounded-full h-auto  max-w-full text-center shrink-0 w-fit text-xs px-3 py-1 font-medium ${p.role === 'leader' ? 'text-green-700 bg-green-200' : p.role === 'editor' ? ' bg-blue-200 text-blue-600 ' : 'text-orange-700 bg-orange-200'}`}>{p.role}</span>
+                                                <button className='h-9 font-bold  rounded-lg p-1 text-indigo-600 hover:text-white hover:bg-indigo-600' >{`Open`}</button>
                                             </div>
                                         </Link>
                                     </li>

@@ -12,6 +12,7 @@ import { connectDB } from './config/db.js';
 import { initSockets } from './sockets/meetingSocket.js';
 import canvasFileRoutes from './routes/canvasFiles.js';
 const app=express();
+app.set('trust proxy',1);
 const server=http.createServer(app);
 app.set('io',initSockets(server));
 app.use(cors({origin:process.env.CLIENT_URL, credentials:true}));
