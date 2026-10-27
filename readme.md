@@ -1,6 +1,6 @@
 ThinkLoom 
 
-ThinkLoom is a collaborative brainstorming app for group of people to present their ideas and discuss with each other under the supervision of a leader.Theleader can create projects invite others to the projects and can create meetings where the members and leaders have a shared canvas on which the leader and editors can make changes while the viewers can only view the canvas. Every member is allowed to submit thier ideas for the meeting and people can vote these ideas to show their support. The leader can present these ideas to the members and even crop the best parts from various ideas on canvas to make a better solution even the earlier meetings canvas can be used in the present meeting.
+ThinkLoom is a brainstorming app which allows a group of people to collaborate and discuss about their ideas and viewpoints through voice and video call and can submit their pre prepared plans during their meeting all under the authority of a single Leader. The discussuions are fully supervised and authorized by the Leader who holds the authority to present the ideas submitted by other, take specific parts of their ideas and maerge them to make a final result.The canvas of each meeting is stored and can be utilized during the meeting or the meeting can even start from where an earlier meeting has ended.
 
 The workflow is designed as: Project→ Meeting → Lobby → Canvas and ideas with voice and video call → final result. 
 
@@ -156,7 +156,7 @@ npm install
 create backend/.env like the backend/.env.example as:
 PORT=5000
 CLIENT_URL=
-MONGO_UR
+MONGO_URI=
 JWT_SECRET=a-long-random-string
 CLOUD_NAME=
 CLOUD_API=

@@ -1,6 +1,7 @@
 import { createSocket } from "../lib/socket";
 import { api, apiUrl } from "../lib/api";
-import { useState, useEffect, useCallback, type ComponentProps, type ChangeEvent } from "react";
+import { CloudUpload,PaperclipIcon } from "lucide-react";
+import { useState, useEffect,useRef, useCallback, type ComponentProps, type ChangeEvent } from "react";
 import { type Attachment, setsize } from "./IdeaFileViewer";
 type FormSubmitEvent = Parameters<NonNullable<ComponentProps<'form'>['onSubmit']>>[0];
 export interface PreviewData{
@@ -35,7 +36,7 @@ export default function IdeasPanel({ projectId, meetingId, isLeader, previewId,s
   const [busyId, setBusyId] = useState<string | null>(null);
   const [presentedId, setPresentedId] = useState<string | null>(null);
   const [showForm,setShowForm]=useState(false);
-
+  const fileInput = useRef<HTMLInputElement>(null);
   const [byVotes, setByVotes] = useState(false);
 
   const load = useCallback(async () => {
@@ -162,10 +163,18 @@ export default function IdeasPanel({ projectId, meetingId, isLeader, previewId,s
          <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 p-4">
         <form className="w-full max-w-md space-y-3 rounded-xl border border-amber-50 bg-gray-500 p-5 shadow-xl" onSubmit={onSubmit}>
           <h3 className="font-semibold text-amber-50">Submit an idea</h3>
-          <input className="block w-full text-sm text-black file:mr-3 file:rounded-lg file:border file:bg-white file:px-3 file:py-1.5 file:text-sm hover:file:bg-gray-100" type="file"
-           key={fileKey} accept=".png,.jpg,.jpeg,.gif,.webp,.pdf,.docx" onChange={onPickFile} />
+          <button
+  type="button"
+  onClick={() => fileInput.current?.click()}
+  className="inline-flex items-center gap-2 rounded-xl hover:bg-gray-200 bg-white p-2 text-sm"
+>
+  <PaperclipIcon className="h-4 w-4" />
+  {file ? 'Change file' : 'Choose file'}
+</button>
+{file && <p className="truncate text-xs text-amber-50">{file.name}</p>}
+<input ref={fileInput} key={fileKey} type="file" className="hidden" accept=".png,.jpg,.jpeg,.gif,.webp,.pdf,.docx" onChange={onPickFile}/>
           <p className="text-xs text-gray-500">{`Image, pdf or docx up to ${MAX_FILE_MB}MB`}</p>
-          <input type="text" className={input} value={form.title} placeholder="Idea's title" onChange={(e) => setForm({ ...form, title: e.target.value })} />
+          <input type="text" className={input} value={form.title} placeholder="Idea's Title" onChange={(e) => setForm({ ...form, title: e.target.value })} />
           <textarea className={`${input} min-h-20`} placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
           {error && <p className="text-sm text-red-600">{error}</p>}
           <div className="flex justify-end gap-2">

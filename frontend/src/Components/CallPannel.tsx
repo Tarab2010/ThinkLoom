@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, } from "react";
 import {LiveKitRoom, GridLayout, ParticipantTile, RoomAudioRenderer,ControlBar, useTracks, useParticipants,} from "@livekit/components-react";
 import { Track } from "livekit-client";
-import { VideoOff,MicOff,User2 } from "lucide-react";
+import { VideoOff,MicOff,User2,GripHorizontalIcon } from "lucide-react";
 import "@livekit/components-styles";
 import { api } from "../lib/api";
 
@@ -109,7 +109,7 @@ export default function CallPannel({projectId, meetingId, isLeader, startcall }:
     }
     return(
         <div  data-lk-theme='default' className="fixed z-40 w-80 [&_.lk-start-audio-button]:hidden! overflow-hidden rounded-xl border bg-gray-900 shadow-xl" style={{left:position.x, top:position.y}} >
-            <div className="cursor-grab touch-none select-none bg-gray-800 py-1 text-center text-x text-white active:cursor-grabbing " onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlepointerup} onPointerCancel={handlepointerup} data-lk-theme='default' >drag here</div>
+            <div className="cursor-grab touch-none select-none  bg-gray-800 py-1 items-center justify-center flex text-center text-x text-white active:cursor-grabbing " onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlepointerup} onPointerCancel={handlepointerup} data-lk-theme='default' ><GripHorizontalIcon/></div>
             <LiveKitRoom token={connection.token} serverUrl={connection.url} connect audio={false} video={false} onDisconnected={()=>setConnection(null)} >
                 
                 <div className="h-48 relative"  ><Screen /></div>

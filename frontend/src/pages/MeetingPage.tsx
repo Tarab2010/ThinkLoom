@@ -107,6 +107,9 @@ export default function MeetingPage() {
             setEnding(false);
         }
     }
+    function capitalize(word:string):string{
+        return word.charAt(0).toUpperCase()+word.slice(1);
+    }
     async function changeRole(userId: string, role: Role) {
         setError('');
         try {
@@ -164,14 +167,14 @@ export default function MeetingPage() {
     return (
         <div className="flex h-dvh flex-col bg-gray-600 ">
             <header className="flex flex-wrap items-center gap-2 border-b border-transparent bg-[#20242D] px-3 py-2 md:gap-3 md:px-4">
-                <Link to={`/projects/${projectId}`} className="text-sm text-white hover:underline ">← Project</Link>
+                <Link to={`/projects/${projectId}`} className="text-sm bg-gray-600 border border-white hover:border-black p-2 rounded-xl text-white hover:underline ">← Project</Link>
                 <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2 md:gap-4" >
                         <h1 className="truncate font-semibold text-gray-200">{meeting.title}</h1>
                         <div className="flex flex-col" >
                             <div className="flex" >
                                 <User className="h-4 w-4 text-white " />
-                                <span className="text-xs text-gray-200">  You: {meeting.myRole}</span>
+                                <span className="text-xs text-gray-200">  You: {capitalize(meeting.myRole)}</span>
                             </div>
                             <div className="flex gap-1" >
                                 <Calendar className="text-white truncate text-xs h-4 w-4" />
@@ -238,7 +241,7 @@ export default function MeetingPage() {
                 <div className=" relative min-w-0 flex-1 min-h-[60vh] p-1 md:p-3">
                     <div className="h-full" >
                         {meeting.status === 'live' && !preview && (
-                            <button onClick={() => setSidebar((prev) => !prev)} title={sidebar ? 'hide ideas' : 'show ideas'} className="absolute right-0 top-1/2 z-20 -translate-1/2 rounded-l-lg border border-r-0 bg-[#20242D] px-1.5 py-4  text-white text-2xl font-bold hover:bg-gray-200 hover:text-black " >
+                            <button onClick={() => setSidebar((prev) => !prev)} title={sidebar ? 'hide ideas' : 'show ideas'} className="absolute max-sm:fixed max-sm:z-40  right-0 top-1/2 z-20 -translate-1/2 rounded-l-lg border border-r-0 bg-[#20242D] px-1.5 py-4  text-white text-2xl font-bold hover:bg-gray-200 hover:text-black " >
                                 {sidebar ? '>' : '<'}
                             </button>
                         )}

@@ -60,51 +60,54 @@ export default function Dashboard() {
             setjoining(false);
         }
     }
+    function capitalize(word:string):string{
+        return word.charAt(0).toUpperCase()+word.slice(1);
+    }
 
     const { logout } = useAuthStore();
     const input = 'w-full rounded-lg bg-white border border-gray-300 px-3 py-2 outline-none focus:border-indigo-500';
     return (
-        <div className=' min-h-screen bg-gray-200 p-4 sm:p-8 bg-linear-to-br from-purple-500 to-white  '>
+        <div className=' min-h-screen  p-4 sm:p-8   '>
             <div className='mx-auto max-w-5xl ' >
                 <div className='flex items-center justify-between gap-3' >
                     <div className='flex flex-col' >
-                        <h1 className=' truncate font-bold text-2xl z-30' >Think<span className='text-indigo-600' > Loom</span></h1>
+                        <h1 className=' truncate font-bold text-2xl z-30' >Think<span className='text-indigo-600' >Loom</span></h1>
                         <span className='text-sm' >Ideas work better together</span>
                     </div>
                     <div className='flex shrink-0 items-center gap-2' >
-                        <div className=" flex w-auto h-auto p-1 text-center shrink-0 justify-center rounded-full font-medium uppercase bg-indigo-800 text-white">{(user ? user.name.split(' ')[0] : 'guest')}</div>
+                        <div className=" flex w-auto h-auto  text-center shrink-0 justify-center rounded-full p-2 uppercase bg-white  text-black border border-black">{(user ? user.name.split(' ')[0] : 'guest')}</div>
                         <button onClick={logout} className="rounded-2xl bg-black px-3 py-2 text-sm text-amber-100 hover:bg-gray-500 hover:underline">Log Out</button>
                     </div>
                 </div>
                 <div className='mt-6 grid gap-4 md:grid-cols-2 md:gap-6' >
-                    <form onSubmit={onCreate} className='space-y-3 h-auto shadow-2xl rounded-2xl bg-transparent backdrop-blur-3xl border shadow-purple-500 border-amber-100 p-4 hover:border-black sm:p-6'>
+                    <form onSubmit={onCreate} className='space-y-3 h-auto shadow-2xl rounded-2xl bg-transparent backdrop-blur-3xl border  border-amber-100 p-4 hover:border-black sm:p-6'>
                         <div className='flex flex-col' >
                             <h2 className='font-bold text-lg'>New Project</h2>
                             <span className='text-sm' >Start the Journey of your new Ideas</span>
                         </div>
                         <label htmlFor="" className='font-semibold' >Name</label>
-                        <input type="text" className={input} placeholder='project name' value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+                        <input type="text" className={input} placeholder='Project Name' value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
                         <label htmlFor="" className='font-semibold' >Description</label>
-                        <input type="text" className={input} placeholder='project description' value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+                        <input type="text" className={input} placeholder='Project Description' value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
                         <select className={input} value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>
                             {categories.map((c) => (
                                 <option value={c} key={c}>
-                                    {c}
+                                    {capitalize(c)}
                                 </option>
                             ))}
                         </select>
                         {error && <p className='text-sm text-red-600'>{error}</p>}
                         <button disabled={creating} className='w-full rounded-lg bg-indigo-600 px-4 py-2 font-bold text-white hover:bg-indigo-700 disabled:opacity-60 sm:w-auto'>{creating ? 'Creating..' : '+ Create Project'}</button>
                     </form>
-                    <form onSubmit={onJoin} className=' space-y-3 h-auto shadow-2xl rounded-2xl bg-transparent backdrop-blur-3xl border shadow-purple-500 border-amber-100 p-4 hover:border-black sm:p-6'>
+                    <form onSubmit={onJoin} className=' space-y-3 h-auto shadow-2xl rounded-2xl bg-transparent backdrop-blur-3xl border  border-amber-100 p-4 hover:border-black sm:p-6'>
                         <div className='flex flex-col' >
                             <h2 className='font-bold text-xl'>Join Project</h2>
                             <span className='text-sm' >Join an ongoing planning</span>
                         </div>
                         <label htmlFor=""><div className="flex  gap-3" ><UserPlus/><p className="text-xl font-medium"> Invite Link</p></div></label>
-                        <input type="text" className={input} placeholder='paste you project link here' value={link} onChange={(e) => setLink(e.target.value)} />
+                        <input type="text" className={input} placeholder='Paste your Project Link here' value={link} onChange={(e) => setLink(e.target.value)} />
                         {joinError && <p className='text-sm text-red-600'>{joinError}</p>}
-                        <button disabled={joining} className='rounded-lg bg-indigo-600 px-4 py-2 font-bold text-white hover:bg-indigo-700 disabled:opacity-60'>{joining ? 'Joining..' : 'Join Project ->'}</button>
+                        <button disabled={joining} className='rounded-lg bg-indigo-600 px-4 py-2 font-bold text-white hover:bg-indigo-700 disabled:opacity-60'>{joining ? 'Joining..' : 'Join Project'}</button>
                     </form>
                 </div>
                 <h2 className='mt-8 text-xl font-medium'>Your Projects</h2>
@@ -118,19 +121,19 @@ export default function Dashboard() {
                             {
                                 projects.map((p) => (
                                     <li key={p.id} className='min-w-0 ' >
-                                        <Link className='flex min-w-0 item-center bg-[#D5C2F0] shadow-purple-500 shadow-2xl justify-between rounded-xl border backdrop-blur-3xl border-white  p-4 hover:border-black' to={`/projects/${p.id}`}>
+                                        <Link className='flex min-w-0 item-center   shadow-2xl justify-between rounded-xl border backdrop-blur-3xl border-white  p-4 hover:border-black' to={`/projects/${p.id}`}>
                                             <div className='flex-8 flex-col  justify-between' >
                                                 <div className='min-w-0 flex flex-col ' >
                                                     <h2 className='font-bold text-xl '>{p.name}</h2>
                                                     <p className='line-clamp-3 text-sm wrap-anywhere '>{p.description}</p>
                                                 </div>
                                                 <div className='flex gap-7' >
-                                                    <p className='text-sm overflow-clip font-semibold text-rose-800 '>{p.category}</p>
+                                                    <p className='text-sm overflow-clip font-semibold text-rose-800 '>{capitalize(p.category)}</p>
 
                                                 </div>
                                             </div>
                                             <div className='flex justify-between items-end flex-2 flex-col ' >
-                                                <span className={` rounded-full h-auto  max-w-full text-center shrink-0 w-fit text-xs px-3 py-1 font-medium ${p.role === 'leader' ? 'text-green-700 bg-green-200' : p.role === 'editor' ? ' bg-blue-200 text-blue-600 ' : 'text-orange-700 bg-orange-200'}`}>{p.role}</span>
+                                                <span className={` rounded-full h-auto  max-w-full text-center shrink-0 w-fit text-xs px-3 py-1 font-medium ${p.role === 'leader' ? 'text-green-700 bg-green-200' : p.role === 'editor' ? ' bg-blue-200 text-blue-600 ' : 'text-orange-700 bg-orange-200'}`}>{capitalize(p.role)}</span>
                                                 <button className='h-9 font-bold  rounded-lg p-1 text-indigo-600 hover:text-white hover:bg-indigo-600' >{`Open`}</button>
                                             </div>
                                         </Link>

@@ -26,6 +26,9 @@ const bystartdesc = (a: MeetingSummary, b: MeetingSummary) =>
 
 export default function MeetingsSection({ projectId, isLeader, }: { projectId: string; isLeader: boolean; }) {
     const [meetings, setMeetings] = useState<MeetingSummary[]>([]);
+    function capitalize(word:string):string{
+        return word.charAt(0).toUpperCase()+word.slice(1);
+    }
     const [form, setForm] = useState({
         title: '',
         topic: '',
@@ -100,12 +103,12 @@ export default function MeetingsSection({ projectId, isLeader, }: { projectId: s
             setCreating(false);
         }
     }
-    const input = 'w-full rounded-lg border border-black px-3 py-2 outline-none focus:border-purple-800';
+    const input = 'w-full rounded-lg border border-black px-3 py-2 outline-none focus:border-indigo-400';
     return (
         <section className="mt-10 flex bg-transparent items-center justify-center flex-col ">
             <h2 className="font-medium text-xl">Meetings</h2>
             {isLeader && (
-                <form onSubmit={CreateMeeting} className="mt-3 w-9/10 border gap-2 rounded-2xl  border-black hover:border-violet-800 shadow-2xl backdrop-blur-2xl p-4 z-10  m-7 space-y-3">
+                <form onSubmit={CreateMeeting} className="mt-3 w-9/10 border gap-2 rounded-2xl hover:border-indigo-600  border-black hover: shadow-2xl backdrop-blur-2xl p-4 z-10  m-7 space-y-3">
                     <label htmlFor="" className="font-semibold" >Meeting Title</label>
                     <input type="text" className={input} value={form.title} placeholder="Meeting title" onChange={(e) => setForm({ ...form, title: e.target.value })} />
                     <label htmlFor="" className="font-semibold" >Meeting Topic</label>
@@ -126,6 +129,7 @@ export default function MeetingsSection({ projectId, isLeader, }: { projectId: s
                             </select>
                         </label>
                     </div>
+                    <div className="flex gap-7  justify-between" >
                     <select name="" id="" value={form.startedFrom} onChange={(e) => setForm({ ...form, startedFrom: e.target.value })}>
 
                         <option value=''>
@@ -138,6 +142,7 @@ export default function MeetingsSection({ projectId, isLeader, }: { projectId: s
                         ))}
                     </select>
                     <button type="submit" disabled={creating} className='rounded-lg bg-indigo-600 px-4 py-2 font-medium text-white hover:bg-indigo-700 disabled:opacity-60'>{creating ? 'Creating..' : 'New Meeting'}</button>
+                </div>
                 </form>
             )}
             {error && (

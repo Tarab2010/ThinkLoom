@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link, useParams,useLocation } from 'react-router-dom';
+import { Link, useParams, useLocation } from 'react-router-dom';
 import type { Role } from "../store/projectstore";
 import MeetingsSection from "../Components/MeetingsSection";
 import { api } from '../lib/api';
-import { UserPlus,User } from "lucide-react";
+import { UserPlus, User } from "lucide-react";
 import { createSocket } from "../lib/socket";
 
 interface ProjectDetail {
@@ -28,6 +28,9 @@ export default function ProjectPage() {
     const [error, setError] = useState('');
     const [copied, setCopied] = useState(false);
     const notice = (useLocation().state as { notice?: string } | null)?.notice;
+    function capitalize(word: string): string {
+        return word.charAt(0).toUpperCase() + word.slice(1);
+    }
     useEffect(() => {
         let cancelled = false;
         (async () => {
@@ -51,32 +54,32 @@ export default function ProjectPage() {
             cancelled = true;
         };
     }, [projectId])
-    const loadmembers=useCallback(async()=>{
-        try{
+    const loadmembers = useCallback(async () => {
+        try {
             setMembers(await api<Member[]>(`/projects/${projectId}/members`))
         }
-        catch{}
-    },[projectId])
-    useEffect(()=>{
-        let cancelled=false;
-        (async()=>{
-            try{
-                const p=await api<ProjectDetail>(`/projects/${projectId}`);
-                if(!cancelled){
+        catch { }
+    }, [projectId])
+    useEffect(() => {
+        let cancelled = false;
+        (async () => {
+            try {
+                const p = await api<ProjectDetail>(`/projects/${projectId}`);
+                if (!cancelled) {
                     setProject(p);
                 }
-                if(!cancelled){
+                if (!cancelled) {
                     await loadmembers();
                 }
             }
-            catch(err){
-                if(!cancelled){
-                    setError(err instanceof Error ?err.message:'failed to load project');
+            catch (err) {
+                if (!cancelled) {
+                    setError(err instanceof Error ? err.message : 'failed to load project');
                 }
             }
         })();
-        return ()=>{cancelled=true;}
-    },[projectId,loadmembers])
+        return () => { cancelled = true; }
+    }, [projectId, loadmembers])
     useEffect(() => {
         if (!projectId) {
             return;
@@ -122,59 +125,59 @@ export default function ProjectPage() {
     }
     const isleader = project.role === 'leader';
     return (
-        <div className="min-h-screen bg-linear-to-br from-purple-600 to-white p-4 sm:p-8">
-            <div className="mx-auto max-w-6xl" >
-                <Link className="text-xl  text-black font-bold hover:underline hover:text-white " to='/'> {`<-Dashboard`}</Link>
-                <span></span>
+        <div className="min-h-screen flex p-4 sm:p-8"> 
+            <div className="mx-auto  max-w-6xl" >
+                <Link className="text-xl  text-white  bg-black rounded-4xl p-3 border border-gray-700  font-semibold  hover:text-black hover:bg-white hover:border-black " to='/'> {`Dashboard`}</Link>
                 <div className="mt-3 flex flex-col items-center gap-2 text-center">
                     <h1 className="text-3xl font-bold">{project.name}</h1>
-                    <p className="max-w-2xl text-lg font-bold ">{project.category}</p>
-                        <p className=" line-clamp-3  wrap-anywhere " >{project.description}</p>
+                    <div className="flex gap-2 items-center" >
+                        <p className="max-w-2xl text-lg font-bold ">{project.category}</p>
+                        <p className=" line-clamp-3  wrap-anywhere " >{project.description}</p></div>
                 </div>
-            
-            {notice&& ( 
-                <p className="mx-auto mt-4 max-w-lg rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-center text-sm text-red-700" >{notice}</p>
-            )}
-            {
-                isleader && project.invitecode && (
-                    <div className=" mt-6 flex  justify-center  " >
-                        <div className="mt-6 w-full max-w-xl rounded-xl border bg-transparent shadow-purple-500 p-4 shadow-xl">
-                            <div className="flex  gap-3" ><UserPlus/><p className="text-xl font-medium"> Invite Link</p></div>
-                            <p className="mt-1 break-all text-sm text-white">{window.location.origin}/join/{project.invitecode}</p>
-                            <button onClick={CopyInvite} className="mt-3 border rounded-lg px-3 py-1.5 text-sm hover:bg-gray-100">{copied ? 'Copied' : 'copy link'}</button>
+
+                {notice && (
+                    <p className="mx-auto mt-4 max-w-lg rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-center text-sm text-red-700" >{notice}</p>
+                )}
+                {
+                    isleader && project.invitecode && (
+                        <div className=" mt-6 flex  justify-center  " >
+                            <div className="mt-6 w-full max-w-xl rounded-xl border bg-transparent  p-4 shadow-xl">
+                                <div className="flex  gap-3" ><UserPlus /><p className="text-xl font-medium"> Invite Link</p></div>
+                                <p className="mt-1 break-all text-sm text-black">{window.location.origin}/join/{project.invitecode}</p>
+                                <button onClick={CopyInvite} className="mt-3 border rounded-lg px-3 py-1.5 text-sm hover:bg-gray-100">{copied ? 'Copied' : 'Copy Link'}</button>
+                            </div>
                         </div>
-                    </div>
-                )
-            }
-            {error && (<p className="mt-2 text-xs text-gray-500">{error}</p>)}
-            <div className=" mt-6 flex flex-col gap-6 bg-transparent lg:flex-row lg:items-start " >
-                <div className="w-full lg:w-72 flex flex-col items-center lg:shrink-0" >
-                    <div className="flex gap-2" >
-                        
-                    <h2 className="mt-8 font-medium">Members</h2>
-                    </div>
-                    <ul className="mt-3 divide-y min-w-full rounded-xl border backdrop-blur-3xl shadow-purple-700 shadow-xl bg-gray/10">
-                        {members.map((m) => (
-                            <li key={m.userId} className="flex items-start justify-between p-3">
-                                <User/>
-                                <div className=" flex flex-col items-center justify-center" >
-                                    
-                                    <p className="font-medium truncate">{m.name}</p>
-                                    {m.email && (<p className="truncate text-sm text-black">{m.email}</p>)}
-                                </div>
-                                {isleader && m.role !== 'leader' ? (
-                                    <select value={m.role} className="shrink-0 rounded-lg border px-2 py-1 text-sm" onChange={(e) => changeRole(m.userId, e.target.value as Role)}>
-                                        <option value="editor">editor</option>
-                                        <option value="viewer">viewer</option>
-                                    </select>
-                                ) : (
-                                    <span className="shrink-0 text-sm font-bold text-gray-900">{m.role}</span>
-                                )}
-                            </li>
-                        ))}
-                    </ul>
-                </div >
-                <MeetingsSection projectId={project.id} isLeader={isleader} />
+                    )
+                }
+                {error && (<p className="mt-2 text-xs text-gray-500">{error}</p>)}
+                <div className=" mt-6 flex flex-col gap-6 bg-transparent lg:flex-row lg:items-start " >
+                    <div className="w-full lg:w-72 flex flex-col items-center lg:shrink-0" >
+                        <div className="flex gap-2" >
+
+                            <h2 className="mt-8 font-medium">Members</h2>
+                        </div>
+                        <ul className="mt-3 divide-y min-w-full rounded-xl border backdrop-blur-3xl  shadow-xl bg-gray/10">
+                            {members.map((m) => (
+                                <li key={m.userId} className="flex items-start justify-between p-3">
+                                    <User />
+                                    <div className=" flex flex-col items-center justify-center" >
+
+                                        <p className="font-medium truncate">{m.name}</p>
+                                        {m.email && (<p className="truncate text-sm text-black">{m.email}</p>)}
+                                    </div>
+                                    {isleader && m.role !== 'leader' ? (
+                                        <select value={capitalize(m.role)} className="shrink-0 rounded-lg border px-2 py-1 text-sm" onChange={(e) => changeRole(m.userId, e.target.value as Role)}>
+                                            <option value="editor">Editor</option>
+                                            <option value="viewer">Viewer</option>
+                                        </select>
+                                    ) : (
+                                        <span className="shrink-0 text-sm font-bold text-gray-900">{capitalize(m.role)}</span>
+                                    )}
+                                </li>
+                            ))}
+                        </ul>
+                    </div >
+                    <MeetingsSection projectId={project.id} isLeader={isleader} />
                 </div>
             </div>
         </div>

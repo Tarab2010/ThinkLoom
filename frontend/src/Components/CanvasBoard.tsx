@@ -188,7 +188,7 @@ export default function CanvasBoard({ projectId, meetingId, onRoleChange, onEnde
             }
             const id = p.socketId as SocketId;
             const next = new Map(collaborators.current);
-            next.set(id, { ...next.get(id), pointer: p.pointer, button: p.button, username: p.userName } as Collaborator);
+            next.set(id, { ...next.get(id), button: p.button, } as Collaborator);
             collaborators.current = next;
             api.updateScene({ collaborators: next });
         });
@@ -281,6 +281,9 @@ export default function CanvasBoard({ projectId, meetingId, onRoleChange, onEnde
                 setError(res.error);
             }
         })
+        function capitalize(word:string):string{
+           return word.charAt(0).toUpperCase()+word.slice(1);
+    }
     const canEdit = role === 'leader' || role === 'editor';
     return (
         <div className="h-full flex flex-col min-h-0" >
@@ -305,11 +308,11 @@ export default function CanvasBoard({ projectId, meetingId, onRoleChange, onEnde
                                         <span className={`h-2 w-2 rounded-full ${isOn ? 'bg-green-500' : 'bg-gray-300'}`} />
                                         <span className="min-w-0 flex-1 truncate">{m.name}</span>
                                         {role === 'leader' && m.role !== 'leader' ? (
-                                            <select className="rounded border text-xs" value={m.role} onChange={(e) => onChangeRole?.(m.userId, e.target.value as Role)}>
-                                                <option value="editor">editor</option>
-                                                <option value="viewer">viewer</option>
+                                            <select className="rounded border text-xs" value={capitalize(m.role)} onChange={(e) => onChangeRole?.(m.userId, e.target.value as Role)}>
+                                                <option value="editor">Editor</option>
+                                                <option value="viewer">Viewer</option>
                                             </select>
-                                        ) : <span className="text-xs text-gray-500">{m.role}</span>}
+                                        ) : <span className="text-xs text-gray-500">{capitalize(m.role)}</span>}
                                         {role === 'leader' && isOn && m.role !== 'leader' && (
                                             <button className="text-xs text-red-600 hover:underline" onClick={() => kick(m.userId, m.name)}>Kick</button>
                                         )}
