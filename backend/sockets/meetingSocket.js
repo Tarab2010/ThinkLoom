@@ -147,6 +147,60 @@ async function broadcastPresence(io, meetingId) {
     }))
     io.to(roomName(meetingId)).emit('presence', users);
 }
+const laststatus=new Map();
+const endedIds=new Map();
+let baselinedone=false;
+let tickbusy=false;
+async function statustick(io){
+    if(tickbusy){
+        return
+    }
+    tickbusy=true;
+    try{
+        const now=Date.now();
+        for(const [id,t] of endedIds){
+            if(t<now<9*60*60*1000){
+                endedIds.delete(id);
+            }
+        }
+        const since=new Date(Date.now()-9*60*60*1000);
+        const candidates=await Meeting.find({startsAt:{$gte:since},endedAt:null,_id: { $nin: [...endedIds.keys()] }});
+
+        const seen=new Set();
+        const changedProjects=new Set();
+        for(const m of candidates){
+            const id=String(m._id);
+            const status=meetingStatus(m);
+            const prev=laststatus.get(id);
+            if(status==='ended'){
+                endedIds.set(id,now);
+                laststatus.delete(id);
+            }
+            else{
+                seen.add(id);
+                laststatus.set(id,status);
+            }
+            if(baselinedone && prev && prev!==status){
+                changedProjects.add(String(m.project));
+            }
+        }
+        for(const id of laststatus.keys()){
+            if(!seen.has(id)){
+                laststatus.delete(id);
+            }
+        }
+        baselinedone=true;
+        for (const pid of changedProjects){
+            io.to(projectRoom(pid)).emit('meetings:changed');
+        }
+    }
+    catch(err){
+        console.error('statustick failed',err.message)
+    }
+    finally{
+        tickbusy=false;
+    }
+}
 async function clearpresentation(io,meetingId){
     const id=String(meetingId);
 
@@ -469,5 +523,6 @@ export function initSockets(server) {
             }
         });
     });
+    setInterval(() => statustick(io), 15000);
     return io;
 }

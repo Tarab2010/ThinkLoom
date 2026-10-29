@@ -13,4 +13,5 @@ const meetingschema =new mongoose.Schema(
     },
     {timestamps:true}
 );
+meetingschema.index({endedAt:1,startedAt:1});
 export default mongoose.model('Meeting',meetingschema);

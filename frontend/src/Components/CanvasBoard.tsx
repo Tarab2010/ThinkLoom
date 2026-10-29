@@ -246,7 +246,7 @@ export default function CanvasBoard({ projectId, meetingId, onRoleChange, onEnde
         const selId = Object.keys(appState.selectedElementIds ?? {})[0];
         const sel = selId ? elements.find((el) => el.id === selId) : undefined;
         const cd = sel?.customData as { title?: string; author: string } | undefined;
-        setFromIdea(cd?.title ? `From idea:${cd.title} by ${cd.author ?? 'unknown'} ` : '')
+        setFromIdea(cd?.title ? `From Idea:${cd.title} by ${cd.author ?? 'unknown'} ` : '')
         const r = roleRef.current;
         const canEditNow = r === 'leader' || r === 'editor';
         imagesRef.current?.sync(elements, files, canEditNow)
@@ -296,7 +296,7 @@ export default function CanvasBoard({ projectId, meetingId, onRoleChange, onEnde
                 </>, statusslot
                 )}
                 {peopleslot && createPortal(<>
-                    <button className="rounded-lg border bg-transparent px-3 py-1 hover:bg-[#111214]" onClick={() => setPeopleOpen((o) => !o)}>
+                    <button className="rounded-lg  bg-transparent border border-white px-3 py-1 hover:bg-[#111214]" onClick={() => setPeopleOpen((o) => !o)}>
                         <Users className="rounded-xl text-white" />
                     </button>
                     {peopleOpen && (

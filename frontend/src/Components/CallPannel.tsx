@@ -35,9 +35,9 @@ function Controls({base}:{base:string}){
             {err && <p>{err}</p> }
             {others.length===0 && <p>no one else in the call</p> }
             {others.map((p)=>(
-                <div  className="flex flex-col items-center border border-amber-50 gap-2" key={p.identity} >
+                <div  className="flex p-2 items-center border border-amber-50 gap-2" key={p.identity} >
                     <div className="flex gap-2 " >
-                       <User2/> <span>{p.name || p.identity}</span></div>
+                       <User2/> <span>{p.name || p.identity}:</span></div>
                     <div className="flex items-center justify-center gap-2" >
                     <button onClick={() => act(p.identity, "mic-off")} ><MicOff className="hover:text-gray-400" /></button>
                     <button onClick={() => act(p.identity, "camera-off")} ><VideoOff className="hover:text-gray-400" /></button>

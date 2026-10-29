@@ -124,6 +124,7 @@ router.post('/:meetingId/end',requiremeetingrole('leader'),async(req,res)=>{
     const id=String(req.meeting._id);
     io?.to(`meeting:${id}`).emit('meeting:ended');
     io?.to(`lobby:${id}`).emit('meeting:ended');
+    io?.to(projectRoom(String(req.meeting.project))).emit('meeting:changed');
     for(const s of (await io?.in(`meeting:${id}`).fetchSockets())??[]){
         s.leave(`meeting:${id}`);
         s.leave(`ideas:${id}`);

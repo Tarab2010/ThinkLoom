@@ -1,4 +1,4 @@
-import { useEffect, useState, type ComponentProps } from "react";
+import { useEffect, useState,useMemo, type ComponentProps } from "react";
 type FormSubmitEvent = Parameters<NonNullable<ComponentProps<'form'>['onSubmit']>>[0];
 import { Link } from "react-router-dom";
 import { api } from "../lib/api";
@@ -22,13 +22,25 @@ const duration = [15, 30, 45, 60, 90, 120, 180];
 
 const bystartdesc = (a: MeetingSummary, b: MeetingSummary) =>
     new Date(b.startsAt).getTime() - new Date(a.startsAt).getTime();
+const bystartasc = (a: MeetingSummary, b: MeetingSummary) =>
+    new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime();
 
-
+type Tab='current'|'earlier';
 export default function MeetingsSection({ projectId, isLeader, }: { projectId: string; isLeader: boolean; }) {
     const [meetings, setMeetings] = useState<MeetingSummary[]>([]);
+    const [tab,setTab]=useState<Tab>('current');
     function capitalize(word:string):string{
         return word.charAt(0).toUpperCase()+word.slice(1);
     }
+    const currentMeetings=useMemo(()=>{
+        const live=meetings.filter((m)=>m.status==='live').sort(bystartasc);
+        const upcoming=meetings.filter((m)=>m.status==='upcoming').sort(bystartasc);
+        return[...live,...upcoming];
+    },[meetings]);
+    
+    const earlierMeetings=useMemo(()=>meetings.filter((m)=>m.status==='ended').sort(bystartdesc)
+    ,[meetings]);
+    const visible=tab==='current'?currentMeetings:earlierMeetings;
     const [form, setForm] = useState({
         title: '',
         topic: '',
@@ -78,6 +90,8 @@ export default function MeetingsSection({ projectId, isLeader, }: { projectId: s
         }
     }, [projectId, countmeeting]);
     async function CreateMeeting(e: FormSubmitEvent) {
+        setTab('current');
+        
         e.preventDefault();
         setError('');
         setCreating(true);
@@ -107,7 +121,10 @@ export default function MeetingsSection({ projectId, isLeader, }: { projectId: s
     return (
         <section className="mt-10 flex bg-transparent items-center justify-center flex-col ">
             <h2 className="font-medium text-xl">Meetings</h2>
-            {isLeader && (
+            <div className="mt-4 flex gap-3" role='tablist'  >
+                <button type='button' role='tab' aria-selected={tab==='current'} onClick={()=>setTab('current') } className={`font-semibold px-2 py-4 ${tab==='current'? 'underline underline-offset-8 decoration-2 border-black' :''}`} >Current</button>
+            <button type='button' role='tab' aria-selected={tab==='earlier'} onClick={()=>setTab('earlier')}  className={`font-semibold px-2 py-4 ${tab==='earlier'? 'underline border-black underline-offset-8 decoration-2' :''}`} >Earlier</button></div>
+            {isLeader && tab==='current' && (
                 <form onSubmit={CreateMeeting} className="mt-3 w-9/10 border gap-2 rounded-2xl hover:border-indigo-600  border-black hover: shadow-2xl backdrop-blur-2xl p-4 z-10  m-7 space-y-3">
                     <label htmlFor="" className="font-semibold" >Meeting Title</label>
                     <input type="text" className={input} value={form.title} placeholder="Meeting title" onChange={(e) => setForm({ ...form, title: e.target.value })} />
@@ -150,12 +167,12 @@ export default function MeetingsSection({ projectId, isLeader, }: { projectId: s
             )}
             {loading ? (
                 <p className="mt-3 text-gray-500">Loading ...</p>
-            ) : meetings.length === 0 ? (
-                <p className="w-full" >No meetings yet{isLeader ? ' Create the first meeting' : ''}</p>
+            ) : visible.length === 0 ? (
+                <p className="w-full text-center" >{tab==='current'?`No live or upcoming meetings${isLeader ? ' Create the first meeting':''}`:'No earlier meeting yet'}</p>
             ) : (
-                <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(min(100%,20rem),20rem)) xl:grid-cols-2">
+                <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(min(100%,20rem),20rem))] xl:grid-cols-2">
                     {
-                        meetings.map((m) => (
+                        visible.map((m) => (
 
                             <Link key={m.id} to={`/projects/${projectId}/meetings/${m.id}`}>
                                 <Meetblocks title={m.title} topic={m.topic} duration={m.duration} startsAt={m.startsAt} status={m.status} startedFrom={m.startedFrom} />

@@ -129,9 +129,9 @@ export default function ProjectPage() {
             <div className="mx-auto  max-w-6xl" >
                 <Link className="text-xl  text-white  bg-black rounded-4xl p-3 border border-gray-700  font-semibold  hover:text-black hover:bg-white hover:border-black " to='/'> {`Dashboard`}</Link>
                 <div className="mt-3 flex flex-col items-center gap-2 text-center">
-                    <h1 className="text-3xl font-bold">{project.name}</h1>
+                    <h1 className="text-3xl font-bold">{capitalize(project.category)}</h1>
                     <div className="flex gap-2 items-center" >
-                        <p className="max-w-2xl text-lg font-bold ">{project.category}</p>
+                        <p className="max-w-2xl text-lg font-bold ">{project.name}:</p>
                         <p className=" line-clamp-3  wrap-anywhere " >{project.description}</p></div>
                 </div>
 

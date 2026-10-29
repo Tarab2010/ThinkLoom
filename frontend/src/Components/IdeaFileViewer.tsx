@@ -239,7 +239,7 @@ export default function IdealFileViewer({ url, attachment, canCrop = false,sourc
                         Drag over the part you want
                         {attachment.kind === 'image' ? 'or use the whole image' : '.'}
                     </span>
-                    <button onClick={useOnCanvas} className='rounded-lg bg-indigo-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700' >use on canvas</button>
+                    <button onClick={useOnCanvas} className='rounded-lg bg-indigo-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700' >Use on Canvas</button>
                     <button onClick={copy} className={`${btn} border-white text-white hover:text-gray-950`} >Copy</button>
                     <button onClick={download} className={`${btn} border-white text-white hover:text-gray-950`} >Download crop</button>
                     <button onClick={endpreview} className='rounded-lg border border-indigo-600 px-3 py-1.5 text-sm text-indigo-600 bg-white  hover:border-white hover:bg-indigo-600 hover:text-white' >End Preview</button>
