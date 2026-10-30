@@ -8,19 +8,19 @@ How to use ThinkLoom
 
 1. Create/Join a Project 
 Sign up or Log in to the app
-Create a project with name, description and category of project(generally research, project, hackathon and other) and you become this project's leader
+Create a project with name, description and category of project(generally Research, Project, Hackathon and Other) and you become this project's leader
 Now share the invite link of this project to the members.
 The team members can paste the invite link as url if they are not signed up then after signing up they are directly moved to the project page or else they can paste the invite link on the Join form present on the Dashboard. 
-New members join the project as viewers the leader can change thier role to editores and viceversa.
+New members join the project as viewers the leader can change their role to editors and viceversa.
 
 2. Create a meeting
 The leader sets a title,topic and start date and time and duration for the meeting and can optionally choose to continue from an earlier meeting to use the canvas of the earlier meeting.
-Meetings can be upcoming,live and ended based on their time or a meeting can end if the leader ends the meeting before its duration.
-Even the earlier meetings links  are available where the members can see the finals canvas of those meetings.
+Meetings can be upcoming,live and ended based on their time or a meeting can end if the leader ends the meeting before its duration.The upcoming and live meetings are shown under the current tab while the ended metings are preent in the earlier tab
+Even the earlier meetings links  are available to join where the members can join by clicking on the ended meeting name and can see the finals canvas of those meetings.
 The Leader can even set the role of members for the meeting before the metting begins.
 
 3. Join the meeting 
-The members join the meeting are are put in a lobby where they view the offline blank canvas until the leader admits them if the leader has the voice and video call open then after admittance the memers also join that call and can talk with each other.
+The members joining the meeting are put in a lobby where they view the offline blank canvas until the leader admits them if the leader has the voice and video call open then after admittance the members also join that call and can talk with each other.
 The leader has the authority to change the role of a member during the meeting and can also  kickout a member out of the meeting but the member can re enter the lobby and request to re join the meeting but the leader can see a message as (member'name was removed earlier)
 If a member wishes to see the canvas of a meeting after the meeting has ended they can join the ended meeting and see the canvas that was made in that meetinh in a view only interface.
 Members cannot join the voice and video calls if the leader is not in the call. 
@@ -34,6 +34,7 @@ Viewers can only view the content on canvas.Leader can copy older meetings canva
 evry member can submit their pre prepared ideas in pdf,docx and image format in this meeting using the right button and can even view other ideas that are submitted.
 The leader can present these ideas to the members and can even copy useful content from each submitted idea.
 Members can vote the ideas after seeing them and decide the best idea out of all the ideas submitted.
+Members can aso see the submitted ideas in either the submission time order or the number of votes order.
 
 6. Final result
 The leader can take parts of the provided ideas,use earlier meeting canvas and editors and leader can add these ideas and add other ideas during meeting on canvas thus combining all the ideas and reaching a final result which they can download in format of png and svg.
@@ -53,7 +54,7 @@ Idea submission-members can submit their pre prepared ides on docx,pdf and image
 
 Voting for ideas-members are allowed to vote the idea submitted by others anonymously.
 
-Removal from meeting-If a member has been rmoved from the meeting by leader and then they are again denied 2 times when they try to re join then they are not eligible to join that meting.
+Removal from meeting-If a member has been removed from the meeting by leader and then they are again denied 2 times when they try to re join then they are not eligible to join that meeting.
 
 Video and voice call-members can connect to each other through voice and video call to tell their ideas and discuss by talking.
 

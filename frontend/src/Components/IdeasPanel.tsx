@@ -1,6 +1,6 @@
 import { createSocket } from "../lib/socket";
 import { api, apiUrl } from "../lib/api";
-import { CloudUpload,PaperclipIcon } from "lucide-react";
+import { PaperclipIcon } from "lucide-react";
 import { useState, useEffect,useRef, useCallback, type ComponentProps, type ChangeEvent } from "react";
 import { type Attachment, setsize } from "./IdeaFileViewer";
 type FormSubmitEvent = Parameters<NonNullable<ComponentProps<'form'>['onSubmit']>>[0];
