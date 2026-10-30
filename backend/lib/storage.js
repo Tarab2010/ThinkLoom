@@ -1,8 +1,5 @@
-import fs from 'fs/promises';
-import path from 'path';
 import {v2 as cloudinary} from 'cloudinary'
 import { randomUUID } from 'crypto';
-import { fileURLToPath } from 'url';
 import 'dotenv/config'
 const KEY=/^[0-9a-f-]{36}\.(png|jpg|gif|webp|pdf|docx)$/;
 cloudinary.config({
@@ -37,6 +34,6 @@ export async function readf(key){
 }
 export async function removef(key){
     try{
-        await cloudinary.uploader.destroy(`thinkloon/${key}`,{resource_type:'raw',type:'private'})
+        await cloudinary.uploader.destroy(`thinkloom/${key}`,{resource_type:'raw',type:'private'})
     }catch{}
 }

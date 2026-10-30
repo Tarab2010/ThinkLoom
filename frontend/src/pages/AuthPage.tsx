@@ -38,7 +38,7 @@ export default function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
             <div className=' h-screen flex-col w-1/2 md:flex  flex-wrap max-sm:min-w-full justify-start items-start p-12 bg-linear-to-br from-gray-600 to-indigo-200  text-white gap-4' >
                 <p className=' max-sm:text-6xl font-bold text-8xl text-black' > Think<span className='text-indigo-600' >Loom</span></p>
                 <span className='text-4xl text-gray-100 ' >Use many ideas and plans</span>
-                <span className='text-4xl font-bold text-indigo-900 ' > To get your perfect result</span>
+                <span className='text-4xl font-bold text-indigo-700 ' > To get your perfect result</span>
                 <ul className='text-2xl gap-4 flex flex-col p-7' >
                     <li className='text-xl font-medium flex flex-start gap-2' >
                         <span > <Users /> </span>

@@ -125,8 +125,8 @@ export default function ProjectPage() {
     }
     const isleader = project.role === 'leader';
     return (
-        <div className="min-h-screen flex p-4 sm:p-8"> 
-            <div className="mx-auto  max-w-6xl" >
+        <div className="min-h-screen flex min-w-screen p-4 sm:p-8"> 
+            <div className="mx-auto w-full max-w-6xl" >
                 <Link className="text-xl  text-white  bg-black rounded-4xl p-3 border border-gray-700  font-semibold  hover:text-black hover:bg-white hover:border-black " to='/'> {`Dashboard`}</Link>
                 <div className="mt-3 flex flex-col items-center gap-2 text-center">
                     <h1 className="text-3xl font-bold">{capitalize(project.category)}</h1>
@@ -150,7 +150,7 @@ export default function ProjectPage() {
                     )
                 }
                 {error && (<p className="mt-2 text-xs text-gray-500">{error}</p>)}
-                <div className=" mt-6 flex flex-col gap-6 bg-transparent lg:flex-row lg:items-start " >
+                <div className=" mt-6 flex w-full  flex-col gap-9 bg-transparent lg:flex-row lg:items-start " >
                     <div className="w-full lg:w-72 flex flex-col items-center lg:shrink-0" >
                         <div className="flex gap-2" >
 

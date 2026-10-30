@@ -1,3 +1,5 @@
+import { useState,useEffect } from "react";
+
 export type meetingstatus='upcoming'|'live'|'ended';
 
 export const statusStyle:Record<meetingstatus,string>={
@@ -31,4 +33,20 @@ export function defaultstartupinput(){
     d.setHours(d.getHours()+1);
     const pad=(n:number)=>String(n).padStart(2,'0');
     return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+export function livestatus(startsAt:string,duration:number,serverStatus:meetingstatus,now:number):meetingstatus{
+    if(serverStatus==='ended'){
+        return 'ended';
+    }
+    const start=new Date(startsAt).getTime();
+    const end=start+duration*60000;
+    return now<start?'upcoming':now<end?'live':'ended';
+}
+export function usenow(intervalMs=5000){
+    const [now,setNow]=useState(()=>Date.now());
+    useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), intervalMs);
+    return () => clearInterval(t);
+  }, [intervalMs]);
+  return now;
 }

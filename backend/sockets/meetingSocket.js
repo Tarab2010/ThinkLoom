@@ -159,7 +159,7 @@ async function statustick(io){
     try{
         const now=Date.now();
         for(const [id,t] of endedIds){
-            if(t<now<9*60*60*1000){
+            if(t<now-9*60*60*1000){
                 endedIds.delete(id);
             }
         }
@@ -523,6 +523,12 @@ export function initSockets(server) {
             }
         });
     });
+    for(const sig of ['SIGTERM','SIGINT']){
+        process.once(sig,async()=>{
+            await Promise.all([...rooms.keys()].map((id)=>saveRoom(id))).catch(()=>{});
+            process.exit(0);
+        })
+    }
     setInterval(() => statustick(io), 15000);
     return io;
 }

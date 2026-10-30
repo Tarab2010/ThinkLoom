@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { api } from "../lib/api";
 import { Calendar,Clock } from "lucide-react";
 import { createSocket } from "../lib/socket";
-import { defaultstartupinput, type meetingstatus } from "../lib/meetingTime";
+import { defaultstartupinput, type meetingstatus,livestatus,usenow } from "../lib/meetingTime";
 import { type Role } from "../store/projectstore";
 import Meetblocks from "./Meetblocks";
 
@@ -29,17 +29,16 @@ type Tab='current'|'earlier';
 export default function MeetingsSection({ projectId, isLeader, }: { projectId: string; isLeader: boolean; }) {
     const [meetings, setMeetings] = useState<MeetingSummary[]>([]);
     const [tab,setTab]=useState<Tab>('current');
-    function capitalize(word:string):string{
-        return word.charAt(0).toUpperCase()+word.slice(1);
-    }
+    const now=usenow();
+    const statusof=(m: MeetingSummary) => livestatus(m.startsAt, m.duration, m.status, now);
     const currentMeetings=useMemo(()=>{
-        const live=meetings.filter((m)=>m.status==='live').sort(bystartasc);
-        const upcoming=meetings.filter((m)=>m.status==='upcoming').sort(bystartasc);
+        const live=meetings.filter((m)=>statusof(m)==='live').sort(bystartasc);
+        const upcoming=meetings.filter((m)=>statusof(m)==='upcoming').sort(bystartasc);
         return[...live,...upcoming];
-    },[meetings]);
+    },[meetings,now]);
     
-    const earlierMeetings=useMemo(()=>meetings.filter((m)=>m.status==='ended').sort(bystartdesc)
-    ,[meetings]);
+    const earlierMeetings=useMemo(()=>meetings.filter((m)=>statusof(m)==='ended').sort(bystartdesc)
+    ,[meetings,now]);
     const visible=tab==='current'?currentMeetings:earlierMeetings;
     const [form, setForm] = useState({
         title: '',
@@ -119,7 +118,7 @@ export default function MeetingsSection({ projectId, isLeader, }: { projectId: s
     }
     const input = 'w-full rounded-lg border border-black px-3 py-2 outline-none focus:border-indigo-400';
     return (
-        <section className="mt-10 flex bg-transparent items-center justify-center flex-col ">
+        <section className="mt-10 flex bg-transparent items-center justify-center w-full flex-col ">
             <h2 className="font-medium text-xl">Meetings</h2>
             <div className="mt-4 flex gap-3" role='tablist'  >
                 <button type='button' role='tab' aria-selected={tab==='current'} onClick={()=>setTab('current') } className={`font-semibold px-2 py-4 ${tab==='current'? 'underline underline-offset-8 decoration-2 border-black' :''}`} >Current</button>
@@ -152,7 +151,7 @@ export default function MeetingsSection({ projectId, isLeader, }: { projectId: s
                         <option value=''>
                             Continue from:(None)
                         </option>
-                        {meetings.map((m) => (
+                        {meetings.filter((m) => statusof(m) === 'ended').map((m) => (
                             <option value={m.id} key={m.id}>
                                 Continue from:{m.title}
                             </option>
@@ -175,7 +174,7 @@ export default function MeetingsSection({ projectId, isLeader, }: { projectId: s
                         visible.map((m) => (
 
                             <Link key={m.id} to={`/projects/${projectId}/meetings/${m.id}`}>
-                                <Meetblocks title={m.title} topic={m.topic} duration={m.duration} startsAt={m.startsAt} status={m.status} startedFrom={m.startedFrom} />
+                                <Meetblocks title={m.title} topic={m.topic} duration={m.duration} startsAt={m.startsAt} status={statusof(m)} startedFrom={m.startedFrom} />
                             </Link>
 
                         ))
